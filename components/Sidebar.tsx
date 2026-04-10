@@ -41,6 +41,7 @@ export default function Sidebar({ type }: SidebarProps) {
 
   const userLinks = [
     { label: "Dashboard", href: "/user", icon: LayoutDashboard },
+    { label: "Profile Card", href: "/user/profile", icon: User },
     { label: "Photo Gallery", href: "/user/photos", icon: ImageIcon },
     { label: "Video Gallery", href: "/user/videos", icon: Video },
     { label: "Brochure", href: "/user/brochure", icon: FileText },

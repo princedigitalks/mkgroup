@@ -133,40 +133,94 @@ export default function AdminPage() {
   ];
 
   return (
-    <DashboardLayout type="admin" title="Admin Control Center">
-      <div className="flex flex-col min-h-screen bg-gray-50/50 -m-4 sm:-m-8 pb-12">
-        <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white py-6 px-8 shadow-xl flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/15 p-2.5 rounded-xl backdrop-blur-md">
-              <ShieldCheck size={24} className="text-cyan-200" />
+    <DashboardLayout type="admin">
+      <div className="space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {overview.map((item) => (
+            <div key={item.label} className="bg-white border border-gray-200 p-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.label}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{item.value}</p>
+              </div>
+              <item.icon size={28} className="text-gray-300" />
             </div>
+          ))}
+        </div>
+
+        {/* Create Card */}
+        <div className="bg-white border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-2xl font-black tracking-tight uppercase">Admin Command Center</h2>
-              <p className="text-[10px] text-blue-200 font-bold uppercase tracking-widest">Card Operations and Monitoring</p>
+              <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">Create New Card</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Enter card details below</p>
+            </div>
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+              <Clock4 size={13} /> Last Saved: Just now
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-6">
-            <div className="text-right">
-              <p className="text-xs font-bold opacity-80 uppercase tracking-wider">System Health</p>
-              <p className="text-sm font-black flex items-center justify-end gap-1.5 text-emerald-300">
-                <span className="h-2 w-2 bg-green-400 rounded-full animate-ping" /> Online
-              </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+            <div className="lg:col-span-3 space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Full Name</label>
+                <input className="w-full border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all" placeholder="Enter name" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Email Address</label>
+                <input className="w-full border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all" placeholder="Enter email" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Mobile Number</label>
+                <input className="w-full border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all" placeholder="Enter number" />
+              </div>
             </div>
-            <button className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-all">
-              Live Analytics <ArrowUpRight size={14} />
-            </button>
+
+            <div className="lg:col-span-4">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Reference Code</label>
+              <input className="w-full border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all" placeholder="Enter refer" />
+            </div>
+
+            <div className="lg:col-span-3">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Category Type</label>
+              <select className="w-full border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all cursor-pointer">
+                <option>Clinic</option>
+                <option>Hospital</option>
+                <option>Individual</option>
+              </select>
+            </div>
+
+            <div className="lg:col-span-2">
+              <button className="w-full bg-black text-white px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-900 active:bg-gray-800 transition-colors">
+                <Plus size={16} /> Add Card
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-8 mt-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {overview.map((item) => (
-              <div key={item.label} className={`bg-gradient-to-r ${item.tone} text-white rounded-3xl p-6 shadow-xl`}>
-                <div className="flex items-center justify-between mb-6">
-                  <p className="text-[10px] font-black uppercase tracking-[2px] text-white/75">{item.label}</p>
-                  <item.icon size={20} className="text-white/90" />
+        {/* Recent Cards */}
+        <div className="bg-white border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">Recent Cards</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Latest edits and publishing status</p>
+            </div>
+            <button className="text-xs font-semibold text-black hover:underline uppercase tracking-wider">View all</button>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            {recentCards.map((card) => (
+              <div key={card.name} className="flex items-center justify-between py-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{card.name}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider mt-0.5">{card.type}</p>
                 </div>
-                <p className="text-4xl font-black tracking-tight">{item.value}</p>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">{card.updated}</p>
+                  <p className={`text-xs font-semibold mt-0.5 ${card.status === "Published" ? "text-emerald-600" : "text-amber-600"}`}>
+                    {card.status}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
