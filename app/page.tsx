@@ -36,10 +36,35 @@ type View =
 
 type MKGroupAppProps = {
   showAccessPanel?: boolean;
+  builderId?: string;
 };
 
-export default function MKGroupApp({ showAccessPanel = true }: MKGroupAppProps) {
+export const BuilderContext = React.createContext<any>(null);
+
+export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGroupAppProps) {
   const [isLocalhostBooting, setIsLocalhostBooting] = useState<boolean>(true);
+  const [builderData, setBuilderData] = useState<any>(null);
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (builderId) {
+      const loadBuilder = async () => {
+        setIsDataLoading(true);
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/builder/${builderId}`);
+          const result = await response.json();
+          if (result.status === "Success") {
+            setBuilderData(result.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch builder data:", error);
+        } finally {
+          setIsDataLoading(false);
+        }
+      };
+      loadBuilder();
+    }
+  }, [builderId]);
 
   useEffect(() => {
     const isLocalhost =
@@ -104,6 +129,7 @@ export default function MKGroupApp({ showAccessPanel = true }: MKGroupAppProps) 
             setView={setView}
             startFromHome={startFromHome}
             setStartFromHome={setStartFromHome}
+            builderData={builderData}
           />
         );
       case 'dashboard': return <DashboardView setView={setView} />;
@@ -123,6 +149,7 @@ export default function MKGroupApp({ showAccessPanel = true }: MKGroupAppProps) 
             setView={setView}
             startFromHome={startFromHome}
             setStartFromHome={setStartFromHome}
+            builderData={builderData}
           />
         );
     }
@@ -140,6 +167,7 @@ export default function MKGroupApp({ showAccessPanel = true }: MKGroupAppProps) 
   }
 
   return (
+    <BuilderContext.Provider value={builderData}>
     <div className="relative min-h-screen bg-gray-50 flex items-center justify-center py-10">
       {showAccessPanel && (
         <div className="fixed top-8 left-8 z-50 flex flex-col gap-4">
@@ -181,5 +209,6 @@ export default function MKGroupApp({ showAccessPanel = true }: MKGroupAppProps) 
       </AnimatePresence>
       </MobileFrame>
     </div>
+    </BuilderContext.Provider>
   );
 }

@@ -9,6 +9,6 @@ type CardPageProps = {
 };
 
 export default function CardPage({ params }: CardPageProps) {
-  void params.id;
-  return <MKGroupApp showAccessPanel={false} />;
+  const { id } = params;
+  return <MKGroupApp showAccessPanel={false} builderId={id} />;
 }

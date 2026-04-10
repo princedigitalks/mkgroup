@@ -8,6 +8,8 @@ import {
   Star, ThumbsUp, ThumbsDown, ChevronLeft, ChevronRight, Box, 
   Mail, Mic, Plus, Download, Bell, Eye, Send
 } from 'lucide-react';
+import { useContext } from 'react';
+import { BuilderContext } from '@/app/page';
 
 type View = 
   | 'home' 
@@ -47,22 +49,39 @@ const ContactItem = ({ icon: Icon, text, isName = false, isAddress = false }: { 
 );
 
 export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewProps) => {
+  const builderData = useContext(BuilderContext);
+  const name = builderData?.name || "HIRENBHAI K. PATEL";
+  const number = builderData?.number || "9825222223";
+  const location = builderData?.location || "B-86 Trikam Nagar Society, Near V-1 Bombay Market, L.H Road, Surat -395003";
+  const timing = builderData?.timing || "10 am to 2 pm & 5 pm to 7 pm";
+  const website = builderData?.website || "www.mkgroup.com";
+  
+  const getProfileImage = () => {
+    if (builderData?.profileImage) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+      const baseUrl = apiUrl.split("/v1/api")[0];
+      return `${baseUrl}/builder/${builderData.profileImage}`;
+    }
+    return "/profile.png";
+  };
+
   return (
     <div className="flex flex-col items-center px-6 space-y-4 w-full h-full justify-center mt-4">
       <div className="relative w-44 h-44 rounded-full  shadow-lg mb-2 overflow-hidden bg-white">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10" />
         <Image 
-          src="/profile.png" 
-          alt="HIRENBHAI K. PATEL" 
+          src={getProfileImage()} 
+          alt={name} 
           fill
           className="object-cover"
           priority
+          unoptimized
         />
       </div>
 
       <div className="w-full space-y-2.5">
-        <ContactItem icon={User} text="HIRENBHAI K. PATEL" isName />
-        <ContactItem icon={Phone} text="9825222223" />
+        <ContactItem icon={User} text={name} isName />
+        <ContactItem icon={Phone} text={number} />
         <div className="bg-white rounded-2xl flex items-stretch shadow-sm border border-gray-200 overflow-hidden h-14 w-full">
           <div className="w-10 flex items-center justify-center text-gray-700 flex-shrink-0">
             <MapPin size={18} strokeWidth={2.5} />
@@ -70,13 +89,12 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
           <div className="w-[1.5px] bg-gray-200 my-2" />
           <div className="flex-1 flex items-center px-4 py-1">
             <span className="font-bold text-gray-800 text-[11px] leading-snug tracking-tight">
-              B-86 Trikam Nagar Society, Near V-1<br />
-              Bombay Market, L.H Road, Surat -395003
+              {location}
             </span>
           </div>
         </div>
-        <ContactItem icon={Clock} text="10 am to 2 pm & 5 pm to 7 pm" />
-        <ContactItem icon={Send} text="www.mkgroup.com" />
+        <ContactItem icon={Clock} text={timing} />
+        <ContactItem icon={Send} text={website} />
       </div>
 
       <div 
@@ -394,36 +412,58 @@ export const PhotoGalleryView = () => (
   </div>
 );
 
-export const ContactPersonView = () => (
+export const ContactPersonView = () => {
+  const builderData = useContext(BuilderContext);
+  const name = builderData?.name || "HIRENBHAI K. PATEL";
+  
+  const getProfileImage = () => {
+    if (builderData?.profileImage) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+      const baseUrl = apiUrl.split("/v1/api")[0];
+      return `${baseUrl}/builder/${builderData.profileImage}`;
+    }
+    return "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-N6qT3990S8v7R5Y3m4H3n7O2R1S5e8.png";
+  };
+
+  return (
   <div className="px-6 space-y-4 pb-10 pt-4">
     <div className="bg-[#6B849E] text-white py-2.5 px-4 rounded-xl text-center font-black text-sm shadow-md border border-white/20 uppercase tracking-widest mb-4">M K GROUP</div>
     {[1, 2].map((i) => (
       <div key={i} className="bg-white/40 rounded-2xl p-3 flex space-x-4 border border-white/60 shadow-sm backdrop-blur-sm group hover:bg-white/60 transition-all">
         <div className="relative w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 border-2 border-black/80 shadow-md">
           <Image 
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-N6qT3990S8v7R5Y3m4H3n7O2R1S5e8.png" 
-            alt="Hirenbhai" 
+            src={getProfileImage()} 
+            alt={name} 
             fill 
             className="object-cover" 
-            referrerPolicy="no-referrer" 
+            referrerPolicy="no-referrer"
+            unoptimized
           />
         </div>
         <div className="flex flex-col justify-center space-y-1">
-          <h3 className="font-black text-[#333333] text-lg leading-tight tracking-tight">HIRENBHAI K. PATEL</h3>
+          <h3 className="font-black text-[#333333] text-lg leading-tight tracking-tight">{name}</h3>
           <p className="text-xs font-bold text-gray-600">Builder & Developer</p>
           <p className="text-xs font-bold text-gray-600">Director</p>
         </div>
       </div>
     ))}
   </div>
-);
+  );
+};
 
-export const LocationView = () => (
+export const LocationView = () => {
+  const builderData = useContext(BuilderContext);
+  const name = builderData?.name || "MK GROUP";
+  const location = builderData?.location || "Office : B-86 Trikam Nagar Society, Near V-1 Bombay Market, L.H Road, Surat -395003";
+  const number = builderData?.number || "98252 22223";
+  const website = builderData?.website || "www.mkgroup.com";
+
+  return (
   <div className="px-4 space-y-6 pt-4 pb-10">
     <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Location and Address</div>
     {[
-      { title: 'MK GROUP', addr: 'Office : B-86 Trikam Nagar Society, Near V-1 Bombay Market, L.H Road, Surat -395003' },
-      { title: 'MK GROUP', addr: 'Ananta Heights : Near, Savaji Korat Brg, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101' }
+      { title: name, addr: location },
+      { title: name, addr: 'Ananta Heights : Near, Savaji Korat Brg, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101' }
     ].map((loc, i) => (
       <div key={i} className="space-y-2">
         <h3 className="font-bold text-lg text-[#003B46]">{loc.title}</h3>
@@ -432,9 +472,9 @@ export const LocationView = () => (
             <MapPin size={14} className="mt-0.5 flex-shrink-0" />
             <span>{loc.addr}</span>
           </div>
-          <div className="flex items-center space-x-2"><Phone size={14} /><span>98252 22223</span></div>
+          <div className="flex items-center space-x-2"><Phone size={14} /><span>{number}</span></div>
           <div className="flex items-center space-x-2"><Mail size={14} /><span>hirenpatel@gmail.com</span></div>
-          <div className="flex items-center space-x-2"><Globe size={14} /><span>www.mkgroup.com</span></div>
+          <div className="flex items-center space-x-2"><Globe size={14} /><span>{website}</span></div>
         </div>
         <div className="w-full h-32 bg-gray-200 rounded-xl overflow-hidden relative border border-gray-300">
           <Image src="https://picsum.photos/seed/map/400/200" alt="Map" fill className="object-cover" referrerPolicy="no-referrer" />
@@ -448,7 +488,8 @@ export const LocationView = () => (
       </div>
     ))}
   </div>
-);
+  );
+};
 
 export const VideoGalleryView = () => (
   <div className="px-4 space-y-4 pt-4 pb-10">
