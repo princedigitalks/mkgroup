@@ -5,6 +5,10 @@ import cookieCutter from 'cookie-cutter';
 interface AuthState {
   user: any | null;
   admin: any | null;
+  users: any[];
+  totalRecords: number;
+  currentPage: number;
+  totalPages: number;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -13,10 +17,51 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   admin: null,
+  users: [],
+  totalRecords: 0,
+  currentPage: 1,
+  totalPages: 1,
   loading: false,
   error: null,
   isAuthenticated: false,
 };
+
+export const fetchUsers = createAsyncThunk(
+  'auth/fetchUsers',
+  async ({ page = 1, limit = 10, search = "" }: { page?: number; limit?: number; search?: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/builder/all?page=${page}&limit=${limit}&search=${search}`);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch builders');
+    }
+  }
+);
+
+export const createUserAdmin = createAsyncThunk(
+  'auth/createUserAdmin',
+  async (userData: any, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await api.post('/user/create', userData);
+      dispatch(fetchUsers({ page: 1 }));
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create user');
+    }
+  }
+);
+
+export const toggleUserStatus = createAsyncThunk(
+  'auth/toggleUserStatus',
+  async ({ userId, status }: { userId: string; status: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/user/update/${userId}`, { status });
+      return { userId, status: response.data.data.status };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update status');
+    }
+  }
+);
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
@@ -107,6 +152,41 @@ const authSlice = createSlice({
       .addCase(loginAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Fetch Users
+      .addCase(fetchUsers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        const { data, pagination } = action.payload;
+        state.users = data;
+        state.totalRecords = pagination.totalRecords;
+        state.currentPage = pagination.currentPage;
+        state.totalPages = pagination.totalPages;
+      })
+      .addCase(fetchUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Create User
+      .addCase(createUserAdmin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createUserAdmin.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createUserAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Toggle Status
+      .addCase(toggleUserStatus.fulfilled, (state, action) => {
+        const { userId, status } = action.payload;
+        const userIndex = state.users.findIndex(u => u._id === userId);
+        if (userIndex !== -1) {
+          state.users[userIndex].status = status;
+        }
       });
   },
 });

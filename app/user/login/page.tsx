@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearError } from "@/lib/redux/slices/authSlice";
 import { RootState, AppDispatch } from "@/lib/redux/store";
+import { toast } from "sonner";
 
 export default function UserLoginPage() {
   const [formData, setFormData] = useState({ identifier: "", password: "" });
@@ -15,13 +16,18 @@ export default function UserLoginPage() {
   const { loading: isLoading, error, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  useEffect(() => {
     if (user) {
+      toast.success("Welcome back!");
       router.push("/user");
     }
-    return () => {
-      dispatch(clearError());
-    };
-  }, [user, router, dispatch]);
+  }, [user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

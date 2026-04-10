@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { ReduxProvider } from '@/lib/redux/provider';
+import { Toaster } from 'sonner';
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
@@ -26,6 +27,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <ReduxProvider>
           {children}
         </ReduxProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

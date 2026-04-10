@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { loginAdmin, clearError } from "@/lib/redux/slices/authSlice";
 import { RootState, AppDispatch } from "@/lib/redux/store";
+import { toast } from "sonner";
 
 export default function AdminLoginPage() {
   const [formData, setFormData] = useState({ identifier: "", password: "" });
@@ -15,13 +16,18 @@ export default function AdminLoginPage() {
   const { loading: isLoading, error, admin } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  useEffect(() => {
     if (admin) {
+      toast.success("Administrator access granted.");
       router.push("/admin");
     }
-    return () => {
-      dispatch(clearError());
-    };
-  }, [admin, router, dispatch]);
+  }, [admin, router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
