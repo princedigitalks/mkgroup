@@ -76,7 +76,7 @@ export default function DashboardLayout({ children, type, title }: DashboardLayo
         </div>
       </div>
 
-      <div className="flex-1 lg:ml-72 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 flex items-center justify-between px-4 sm:px-8">
           <div className="flex items-center gap-4">
             <button

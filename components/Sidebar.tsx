@@ -7,7 +7,6 @@ import {
   Image as ImageIcon, 
   FileText, 
   Mail, 
-  ChevronRight,
   LogOut,
   Info,
   Video,
@@ -62,34 +61,42 @@ export default function Sidebar({ type }: SidebarProps) {
 
   return (
     <div className={cn(
-      "flex h-screen flex-col border-r w-72 fixed left-0 top-0 z-40 backdrop-blur-xl",
-      type === "admin" ? "bg-white/95 border-gray-200" : "bg-gradient-to-b from-blue-50/70 via-white to-white border-blue-100"
+      "flex h-screen flex-col border-r w-64 fixed left-0 top-0 z-40",
+      type === "admin" ? "bg-gray-950 border-gray-800" : "bg-white border-gray-200"
     )}>
-      <div className="flex h-20 items-center px-7 border-b border-inherit">
+      <div className={cn(
+        "flex h-16 items-center px-5 border-b",
+        type === "admin" ? "border-gray-800" : "border-gray-200"
+      )}>
         <div className={cn(
-          "h-10 w-10 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg",
-          type === 'admin' ? "bg-black shadow-black/20" : "bg-blue-600 shadow-blue-200"
+          "h-8 w-8 flex items-center justify-center text-white mr-3",
+          type === 'admin' ? "bg-white/10" : "bg-blue-600"
         )}>
-          {type === 'admin' ? <ShieldCheck size={18} /> : <User size={18} />}
+          {type === 'admin' ? <ShieldCheck size={16} className="text-white" /> : <User size={16} />}
         </div>
-        <span className="text-xl font-black text-gray-900 tracking-tighter uppercase">
-          {type === 'admin' ? 'Admin' : 'User'} <span className={type === 'admin' ? "text-gray-400" : "text-blue-600"}>Panel</span>
+        <span className={cn("text-base font-bold uppercase tracking-tight",
+          type === 'admin' ? "text-white" : "text-gray-900"
+        )}>
+          {type === 'admin' ? 'Admin' : 'User'}{" "}
+          <span className={type === 'admin' ? "text-gray-400" : "text-blue-600"}>Panel</span>
         </span>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-6 px-4">
-        <div className="space-y-2">
+      <div className="flex-1 overflow-y-auto py-4 px-3">
+        <div className="space-y-0.5">
           {links.map((link) => {
             const isActive = pathname === link.href && link.label !== "Logout";
-            
+
             const content = (
               <>
                 <link.icon className={cn(
-                  "h-5 w-5 transition-transform group-hover:scale-110",
-                  isActive ? (type === 'admin' ? "text-black" : "text-blue-600") : "text-gray-400"
+                  "h-4 w-4 shrink-0",
+                  type === 'admin'
+                    ? isActive ? "text-white" : "text-gray-400"
+                    : isActive ? "text-blue-600" : "text-gray-400"
                 )} />
-                {link.label}
-                {isActive && <ChevronRight className="ml-auto h-4 w-4 animate-pulse" />}
+                <span className="flex-1">{link.label}</span>
+                {isActive && <div className={cn("h-1.5 w-1.5 rounded-full", type === 'admin' ? "bg-white" : "bg-blue-600")} />}
               </>
             );
 
@@ -99,8 +106,10 @@ export default function Sidebar({ type }: SidebarProps) {
                   key={link.label}
                   onClick={link.action}
                   className={cn(
-                    "w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all group border border-transparent",
-                    link.color || "text-gray-500 hover:bg-white hover:border-gray-100 hover:text-gray-900 hover:shadow-sm"
+                    "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors",
+                    type === 'admin'
+                      ? "text-red-400 hover:bg-white/5 hover:text-red-300"
+                      : "text-red-500 hover:bg-red-50"
                   )}
                 >
                   {content}
@@ -113,12 +122,14 @@ export default function Sidebar({ type }: SidebarProps) {
                 key={link.label}
                 href={link.href!}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all group border",
-                  isActive 
-                    ? (type === 'admin'
-                        ? "bg-gray-900 text-white border-gray-900 shadow-lg shadow-gray-200"
-                        : "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100")
-                    : "text-gray-500 border-transparent hover:bg-white hover:border-gray-100 hover:text-gray-900 hover:shadow-sm"
+                  "flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors",
+                  type === 'admin'
+                    ? isActive
+                      ? "bg-white/10 text-white"
+                      : "text-gray-400 hover:bg-white/5 hover:text-white"
+                    : isActive
+                      ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 )}
               >
                 {content}
@@ -128,22 +139,22 @@ export default function Sidebar({ type }: SidebarProps) {
         </div>
       </div>
 
-      <div className="p-4 border-t border-inherit">
+      <div className={cn("p-4 border-t", type === 'admin' ? "border-gray-800" : "border-gray-200")}>
         <div className={cn(
-          "rounded-3xl p-4 flex items-center gap-3",
-          type === 'admin' ? "bg-gray-50 border border-gray-100" : "bg-blue-50/70 border border-blue-100"
+          "p-3 flex items-center gap-3",
+          type === 'admin' ? "bg-white/5" : "bg-gray-50 border border-gray-200 rounded-lg"
         )}>
           <div className={cn(
-            "h-10 w-10 rounded-2xl flex items-center justify-center font-black text-xs",
-            type === 'admin' ? "bg-black text-white" : "bg-blue-600 text-white shadow-lg shadow-blue-100"
+            "h-8 w-8 flex items-center justify-center font-bold text-xs",
+            type === 'admin' ? "bg-white/10 text-white" : "bg-gray-900 text-white rounded-md"
           )}>
             {type === 'admin' ? 'A' : 'U'}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-black text-gray-900 truncate">
+            <span className={cn("text-xs font-semibold truncate", type === 'admin' ? "text-white" : "text-gray-900")}>
               {type === 'admin' ? 'Admin Access' : 'User Account'}
             </span>
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+            <span className={cn("text-[10px] font-medium", type === 'admin' ? "text-gray-500" : "text-gray-400")}>
               Verified
             </span>
           </div>
