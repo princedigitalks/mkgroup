@@ -14,7 +14,8 @@ import {
   CreditCard,
   User,
   ShieldCheck,
-  Database
+  Database,
+  QrCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ export default function Sidebar({ type }: SidebarProps) {
   const userLinks = [
     { label: "Dashboard", href: "/user", icon: LayoutDashboard },
     { label: "Profile Card", href: "/user/profile", icon: User },
+    { label: "QR Card", href: "/user/qr", icon: QrCode },
     { label: "Photo Gallery", href: "/user/photos", icon: ImageIcon },
     { label: "Video Gallery", href: "/user/videos", icon: Video },
     { label: "Brochure", href: "/user/brochure", icon: FileText },
