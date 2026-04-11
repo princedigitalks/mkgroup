@@ -66,7 +66,7 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
   };
 
   return (
-    <div className="flex flex-col items-center px-6 space-y-4 w-full h-full justify-center mt-4">
+    <div className="flex flex-col items-center px-12 space-y-6 w-full h-full justify-center mt-4">
       <div className="relative w-44 h-44 rounded-full  shadow-lg mb-2 overflow-hidden bg-white">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10" />
         <Image 
@@ -126,7 +126,7 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
           <span className="text-xs font-black text-gray-700">Share</span>
         </div>
 
-        <div className='flex items-center'>
+        <div className='flex items-center mx-4 mb-5'>
           <button
             type="button"
             aria-pressed={startFromHome}
@@ -242,7 +242,7 @@ export const DashboardView = ({ setView }: ViewProps) => (
         { id: 'photo-gallery', label: 'Photo', img: '/icons/IconPhoto-01.png' },
         { id: 'video-gallery', label: 'Videos', img: '/icons/IconVideos-01.png' },
         { id: 'inquiry', label: 'Inquiry', img: '/icons/IconInquiry.png' },
-        { id: 'brochure', label: 'Brochure', img: '/iconsbBrochure-01.png' },
+        { id: 'brochure', label: 'Brochure', img: '/icons/brochure-01.png' },
       ].map((item) => (
         <button key={item.id} onClick={() => setView(item.id as View)} className="flex flex-col items-center group">
           <div className="ounded-xl shadow-[0_2px_5px_rgba(0,0,0,0.1)] ">
