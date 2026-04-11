@@ -202,7 +202,7 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
-          className="h-full"
+          className="h-full w-full"
         >
           {renderView()}
         </motion.div>

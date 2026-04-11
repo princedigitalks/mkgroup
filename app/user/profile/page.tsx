@@ -200,7 +200,7 @@ export default function ProfilePage() {
           <button
             onClick={handleSaveProfile}
             disabled={loading}
-            className="w-full mt-5 bg-blue-600 text-white py-2.5 text-sm font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-5 bg-blue-600 text-white py-2.5 text-sm font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2 rounded-lg"
           >
             {loading && <Loader2 size={16} className="animate-spin" />}
             {loading ? "Saving..." : "Save Profile"}

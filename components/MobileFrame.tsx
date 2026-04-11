@@ -44,9 +44,12 @@ export const MobileFrame = ({ children, currentView, setView }: MobileFrameProps
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
       {/* Phone Shell */}
-      <div className="relative w-full max-w-[400px] bg-[#B0CADA] rounded-[60px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-[12px] border-[8px] border-white/30">
-        {/* Screen */}
-        <div className="relative bg-[#B3D0E2] rounded-[48px] overflow-hidden flex flex-col shadow-inner" style={{ height: '820px' }}>
+      <div className="relative w-[400px] flex-shrink-0 bg-[#B0CADA] rounded-[60px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-[12px] border-[8px] border-white/30">
+        {/* Screen — fixed height, never grows */}
+        <div
+          className="relative bg-[#B3D0E2] rounded-[48px] overflow-hidden flex flex-col shadow-inner"
+          style={{ height: '820px', minHeight: '820px', maxHeight: '820px' }}
+        >
 
           {/* Header for Subviews */}
           {isSubView && (

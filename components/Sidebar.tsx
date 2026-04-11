@@ -15,7 +15,10 @@ import {
   User,
   ShieldCheck,
   Database,
-  QrCode
+  QrCode,
+  Calendar,
+  MapPin,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,12 +46,15 @@ export default function Sidebar({ type }: SidebarProps) {
   const userLinks = [
     { label: "Dashboard", href: "/user", icon: LayoutDashboard },
     { label: "Profile Card", href: "/user/profile", icon: User },
-    { label: "QR Card", href: "/user/qr", icon: QrCode },
+    { label: "About", href: "/user/about", icon: Info },
+    { label: "Contact", href: "/user/contact", icon: Mail },
+    { label: "Location", href: "/user/location", icon: MapPin },
+    { label: "Appointment", href: "/user/appointment", icon: Calendar },
+    { label: "Inquiry", href: "/user/inquiry", icon: MessageSquare },
     { label: "Photo Gallery", href: "/user/photos", icon: ImageIcon },
     { label: "Video Gallery", href: "/user/videos", icon: Video },
     { label: "Brochure", href: "/user/brochure", icon: FileText },
-    { label: "About Us", href: "/user/about", icon: Info },
-    { label: "Inquiry", href: "/user/inquiry", icon: Mail },
+    { label: "QR Card", href: "/user/qr", icon: QrCode },
     { label: "Logout", action: handleLogout, icon: LogOut, color: "text-red-500 hover:bg-red-50" },
   ];
 

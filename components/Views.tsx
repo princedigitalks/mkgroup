@@ -238,7 +238,7 @@ export const DashboardView = ({ setView }: ViewProps) => (
         { id: 'contact-person', label: 'Person', img: '/icons/IconPerson-01.png' },
         { id: 'about-us', label: 'About us', img: '/icons/IconAboutus.png' },
         { id: 'appointment', label: 'Appointment', img: '/icons/appointment-01.png' },
-        { id: 'location', label: 'Location', img: '/icons/IconLocation-01.png' },
+        { id: 'location', label: 'Location', img: '/icons/IconLocation.png' },
         { id: 'photo-gallery', label: 'Photo', img: '/icons/IconPhoto-01.png' },
         { id: 'video-gallery', label: 'Videos', img: '/icons/IconVideos-01.png' },
         { id: 'inquiry', label: 'Inquiry', img: '/icons/IconInquiry.png' },
