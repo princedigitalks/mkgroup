@@ -544,24 +544,131 @@ export const AppointmentView = () => (
   </div>
 );
 
-export const PhotoGalleryView = () => (
-  <div className="px-4 space-y-4 pt-4 pb-10">
-    <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Photo Gallery</div>
-    <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4]">
-      <Image 
-        src="https://picsum.photos/seed/building/600/800" 
-        alt="Ananta Heights" 
-        fill
-        className="object-cover"
-        referrerPolicy="no-referrer"
-      />
+export const PhotoGalleryView = () => {
+  const builderData = useContext(BuilderContext);
+  const [photos, setPhotos] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState<"General" | "Awarded">("General");
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const fetchPhotos = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gallery-image/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setPhotos(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch photos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPhotos();
+  }, [builderData?._id]);
+
+  const getImageUrl = (imageName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${imageName}`;
+  };
+
+  const filteredPhotos = photos.filter((p) => p.category === activeTab);
+  const currentPhoto = filteredPhotos[currentIndex];
+
+  const handleTabChange = (tab: "General" | "Awarded") => {
+    setActiveTab(tab);
+    setCurrentIndex(0);
+  };
+
+  return (
+    <div className="px-4 space-y-4 pt-4 pb-10">
+      <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">
+        Photo Gallery
+      </div>
+
+      <div className="relative px-8">
+        {currentPhoto?.title && (
+          <div className="mb-3 flex justify-start">
+            <span className="bg-white px-5 py-2 rounded-xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50">
+              {currentPhoto.title}
+            </span>
+          </div>
+        )}
+        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] bg-gray-100 border border-gray-200">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
+            </div>
+          ) : currentPhoto ? (
+            <>
+              <Image 
+                src={getImageUrl(currentPhoto.image)} 
+                alt="Gallery" 
+                fill 
+                className="object-cover" 
+                unoptimized
+              />
+              
+              {/* Dots / Pager */}
+              {filteredPhotos.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 z-10">
+                  {filteredPhotos.slice(0, 5).map((_, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? "w-6 bg-white shadow-sm" : "w-1.5 bg-white/40"}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+              <ImageIcon size={48} />
+              <p className="text-xs font-bold mt-2 uppercase">No {activeTab} Photos</p>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Arrows Outside */}
+        {filteredPhotos.length > 1 && (
+          <>
+            <button 
+              onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : filteredPhotos.length - 1))}
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronLeft size={28} />
+            </button>
+            <button 
+              onClick={() => setCurrentIndex((prev) => (prev < filteredPhotos.length - 1 ? prev + 1 : 0))}
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="flex justify-center space-x-4">
+        <button 
+          onClick={() => handleTabChange("General")}
+          className={`px-8 py-2 rounded-xl text-xs font-black shadow-md border transition-all ${activeTab === 'General' ? 'bg-[#003B46] text-white border-[#003B46]' : 'bg-white text-gray-600 border-gray-200'}`}
+        >
+          General
+        </button>
+        <button 
+          onClick={() => handleTabChange("Awarded")}
+          className={`px-8 py-2 rounded-xl text-xs font-black shadow-md border transition-all ${activeTab === 'Awarded' ? 'bg-[#003B46] text-white border-[#003B46]' : 'bg-white text-gray-600 border-gray-200'}`}
+        >
+          Awarded
+        </button>
+      </div>
     </div>
-    <div className="flex justify-center space-x-4">
-      <button className="bg-white px-6 py-1.5 rounded-md text-xs font-bold shadow-sm border border-gray-200">General</button>
-      <button className="bg-white px-6 py-1.5 rounded-md text-xs font-bold shadow-sm border border-gray-200">Awarded</button>
-    </div>
-  </div>
-);
+  );
+};
 
 export const ContactPersonView = () => {
   const builderData = useContext(BuilderContext);
@@ -722,29 +829,95 @@ export const LocationView = () => {
   );
 };
 
-export const VideoGalleryView = () => (
-  <div className="px-4 space-y-4 pt-4 pb-10">
-    <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Video Gallery</div>
-    <div className="relative aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl">
-      <Image src="https://picsum.photos/seed/video/600/1000" alt="Video Placeholder" fill className="object-cover opacity-80" referrerPolicy="no-referrer" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-16 h-16 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/50">
-          <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white border-b-[10px] border-b-transparent ml-1"></div>
-        </div>
+export const VideoGalleryView = () => {
+  const builderData = useContext(BuilderContext);
+  const [videos, setVideos] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const fetchVideos = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gallery-video/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setVideos(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, [builderData?._id]);
+
+  const getVideoUrl = (videoName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${videoName}`;
+  };
+
+  const currentVideo = videos[currentIndex];
+
+  return (
+    <div className="px-4 space-y-4 pt-4 pb-10">
+      <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20 uppercase tracking-widest">
+        Video Gallery
       </div>
-      <div className="absolute bottom-10 left-6 right-6 text-white space-y-2">
-        <div className="bg-orange-500/90 px-4 py-1 rounded-md inline-block text-sm font-bold">નવી અને શાનદાર જીવનશૈલી!</div>
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-white rounded-full"></div>
-          <span className="text-sm font-bold">Ananta Heights</span>
+
+      <div className="relative px-6">
+        <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[9/16] bg-black border-[6px] border-[#003B46]/10">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
+            </div>
+          ) : currentVideo ? (
+            <video 
+              key={currentVideo._id}
+              src={getVideoUrl(currentVideo.video)} 
+              controls 
+              className="w-full h-full object-cover"
+              autoPlay={false}
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+              <Video size={48} />
+              <p className="text-xs font-bold mt-2 uppercase">No Videos Available</p>
+            </div>
+          )}
         </div>
+
+        {/* Navigation Arrows Outside */}
+        {videos.length > 1 && (
+          <>
+            <button 
+              onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : videos.length - 1))}
+              className="absolute left-[-10px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronLeft size={36} />
+            </button>
+            <button 
+              onClick={() => setCurrentIndex((prev) => (prev < videos.length - 1 ? prev + 1 : 0))}
+              className="absolute right-[-10px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronRight size={36} />
+            </button>
+          </>
+        )}
       </div>
+
+      {videos.length > 0 && (
+        <div className="text-center">
+           <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+             Video {currentIndex + 1} of {videos.length}
+           </p>
+        </div>
+      )}
     </div>
-    <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm flex items-center justify-between">
-      <ChevronLeft /><span className="text-xs">Select and Play</span><ChevronRight />
-    </div>
-  </div>
-);
+  );
+};
 
 export const BrochureView = () => (
   <div className="px-6 space-y-6 pt-4 pb-10">

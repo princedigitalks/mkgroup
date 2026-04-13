@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/redux/store";
+import { fetchProfile } from "@/lib/redux/slices/authSlice";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -17,19 +20,29 @@ export default function DashboardLayout({ children, type, title }: DashboardLayo
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, admin } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     const authKey = type === 'admin' ? 'mkgroup_admin_auth' : 'mkgroup_user_auth';
     const loginPath = type === 'admin' ? '/admin/login' : '/user/login';
+    const token = localStorage.getItem('mkgroup_token');
     const hasLocalAuth = localStorage.getItem(authKey) === 'true';
     const hasCookieAuth = document.cookie.split('; ').some((item) => item.startsWith(`${authKey}=true`));
-    const isAuth = hasLocalAuth || hasCookieAuth;
+    const isAuth = (hasLocalAuth || hasCookieAuth) && token;
+
     if (!isAuth && !pathname.includes('/login')) {
       router.push(loginPath);
-    } else {
+    } else if (isAuth) {
       setIsAuthorized(true);
+      // If we have auth but NO user data in redux (after refresh), fetch it
+      if (type === 'user' && !user) {
+        dispatch(fetchProfile());
+      }
+      // For admin, if admin object is missing but we have token, we might need a fetchAdminProfile 
+      // but since everything is builder-centric right now, fetchProfile works for the builder dashboard.
     }
-  }, [type, pathname, router]);
+  }, [type, pathname, router, dispatch, user, admin]);
 
   const handleLogout = () => {
     const authKey = type === 'admin' ? 'mkgroup_admin_auth' : 'mkgroup_user_auth';

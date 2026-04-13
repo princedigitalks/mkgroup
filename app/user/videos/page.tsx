@@ -1,157 +1,202 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Plus, Trash2, Check, X, Video, Upload, Play } from "lucide-react";
+import { Plus, Trash2, Check, X, Video, Upload, Loader2, Award, Grid, Send } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { toast } from "sonner";
+import api from "@/lib/axios";
 
-interface VideoItem {
-  id: number;
-  url: string;
-  name: string;
-  title: string;
-  size: string;
-  uploadedAt: string;
+interface GalleryVideo {
+  _id: string;
+  category: "General" | "Awarded";
+  video: string;
+}
+
+interface PreviewFile {
+  file: File;
+  preview: string;
 }
 
 export default function VideosPage() {
-  const [videos, setVideos] = useState<VideoItem[]>([]);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [editingTitle, setEditingTitle] = useState<number | null>(null);
-  const [tempTitle, setTempTitle] = useState("");
-  const [playing, setPlaying] = useState<number | null>(null);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [videos, setVideos] = useState<GalleryVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<PreviewFile[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const formatSize = (bytes: number) =>
-    bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  useEffect(() => {
+    if (user?._id) {
+      fetchVideos();
+    }
+  }, [user]);
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/gallery-video/user/${user._id}`);
+      if (response.data.status === "Success") {
+        setVideos(response.data.data);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to fetch videos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newVideos: VideoItem[] = files.map((file) => ({
-      id: Date.now() + Math.random(),
-      url: URL.createObjectURL(file),
-      name: file.name,
-      title: file.name.replace(/\.[^/.]+$/, ""),
-      size: formatSize(file.size),
-      uploadedAt: new Date().toLocaleDateString(),
+    if (files.length === 0) return;
+
+    const newPreviews = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
     }));
-    setVideos((prev) => [...prev, ...newVideos]);
+
+    setPreviews(prev => [...prev, ...newPreviews]);
     e.target.value = "";
   };
 
-  const saveTitle = (id: number) => {
-    setVideos(videos.map((v) => v.id === id ? { ...v, title: tempTitle || v.name } : v));
-    setEditingTitle(null);
+  const uploadVideos = async () => {
+    if (previews.length === 0) return;
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      previews.forEach((item) => {
+        formData.append("videos", item.file);
+      });
+
+      const response = await api.post("/gallery-video/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (response.data.status === "Success") {
+        setVideos(prev => [...response.data.data, ...prev]);
+        setPreviews([]);
+        toast.success(`${previews.length} videos uploaded successfully`);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to upload videos");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await api.delete(`/gallery-video/delete/${id}`);
+      if (response.data.status === "Success") {
+        toast.success("Video deleted successfully");
+        setVideos(videos.filter((v) => v._id !== id));
+        setDeleteId(null);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete video");
+    }
+  };
+
+  const getVideoUrl = (videoName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${videoName}`;
   };
 
   return (
     <DashboardLayout type="user">
-      <div className="space-y-4">
-
+      <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white border border-gray-200 rounded-xl px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Video Gallery</h2>
-            <p className="text-sm text-gray-400 mt-0.5">{videos.length} video{videos.length !== 1 ? "s" : ""} uploaded</p>
+            <h2 className="text-lg font-black text-[#003B46] uppercase tracking-tight">Video Gallery</h2>
+            <p className="text-sm text-gray-400 mt-0.5">{videos.length} total videos uploaded</p>
           </div>
+          
           <button
             onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 bg-[#003B46] text-white px-5 py-2.5 text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-lg"
           >
-            <Plus size={15} /> Add Videos
+            <Plus size={16} /> SELECT VIDEOS
           </button>
-          <input ref={fileRef} type="file" accept="video/*" multiple className="hidden" onChange={handleFiles} />
+          <input ref={fileRef} type="file" accept="video/*" multiple className="hidden" onChange={handleFileSelect} />
         </div>
 
-        {/* Empty State */}
-        {videos.length === 0 && (
-          <div
-            onClick={() => fileRef.current?.click()}
-            className="bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 rounded-xl px-6 py-16 flex flex-col items-center gap-3 cursor-pointer transition-colors"
-          >
-            <div className="h-14 w-14 bg-blue-50 rounded-xl flex items-center justify-center">
-              <Video size={28} className="text-blue-400" />
+        {/* Upload Previews */}
+        {previews.length > 0 && (
+          <div className="bg-blue-50/50 border-2 border-dashed border-blue-200 rounded-3xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+               <h3 className="text-sm font-black text-blue-900 uppercase">Video Upload Preview ({previews.length})</h3>
+               <div className="flex gap-2">
+                 <button onClick={() => setPreviews([])} className="px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg">Clear All</button>
+                 <button 
+                    onClick={uploadVideos} 
+                    disabled={isUploading}
+                    className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-black shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                 >
+                    {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                    UPLOAD {previews.length} VIDEOS
+                 </button>
+               </div>
             </div>
-            <p className="text-base font-semibold text-gray-500">Click to upload videos</p>
-            <p className="text-sm text-gray-400">MP4, MOV, WEBM supported</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {previews.map((item, index) => (
+                <div key={index} className="relative aspect-video rounded-2xl overflow-hidden border-2 border-white shadow-md">
+                  <video src={item.preview} className="w-full h-full object-cover" muted />
+                  <button onClick={() => setPreviews(prev => prev.filter((_, i) => i !== index))} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"><X size={12} /></button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Video Grid */}
-        {videos.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {videos.map((video) => (
-              <div key={video.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        {/* Existing Videos Grid */}
+        {loading ? (
+            <div className="flex items-center justify-center py-24">
+                <Loader2 className="animate-spin text-blue-600" size={40} />
+            </div>
+        ) : videos.length === 0 && previews.length === 0 ? (
+          <div
+            onClick={() => fileRef.current?.click()}
+            className="bg-white border-2 border-dashed border-gray-200 hover:border-blue-400 hover:bg-gray-50 rounded-3xl px-6 py-20 flex flex-col items-center gap-4 cursor-pointer transition-all"
+          >
+            <div className="h-20 w-20 bg-blue-50 text-blue-400 rounded-2xl flex items-center justify-center shadow-inner">
+              <Video size={40} />
+            </div>
+            <div className="text-center">
+                <p className="text-lg font-bold text-gray-700">No videos yet</p>
+                <p className="text-sm text-gray-400 mt-1">Upload project videos or achievements</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {videos.map((item) => (
+              <div key={item._id} className="relative aspect-video group rounded-2xl overflow-hidden border border-gray-100 bg-black shadow-sm h-48">
+                <video src={getVideoUrl(item.video)} className="h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" controls />
 
-                {/* Video Player */}
-                <div className="relative aspect-video bg-black">
-                  {playing === video.id ? (
-                    <video
-                      src={video.url}
-                      controls
-                      autoPlay
-                      className="w-full h-full object-contain"
-                      onEnded={() => setPlaying(null)}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                      <video src={video.url} className="w-full h-full object-contain opacity-60" />
-                      <button
-                        onClick={() => setPlaying(video.id)}
-                        className="absolute h-12 w-12 bg-white/90 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all shadow-lg"
-                      >
-                        <Play size={20} className="text-blue-600 ml-1" fill="currentColor" />
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* Status Badge - Removed */}
 
-                {/* Info */}
-                <div className="px-4 py-3">
-                  {editingTitle === video.id ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        autoFocus
-                        value={tempTitle}
-                        onChange={(e) => setTempTitle(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") saveTitle(video.id); if (e.key === "Escape") setEditingTitle(null); }}
-                        className="flex-1 border border-blue-500 bg-blue-50 px-2 py-1 text-sm rounded-md focus:outline-none"
-                      />
-                      <button onClick={() => saveTitle(video.id)} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"><Check size={14} /></button>
-                      <button onClick={() => setEditingTitle(null)} className="p-1 text-red-500 hover:bg-red-50 rounded"><X size={14} /></button>
+                {/* Delete Control */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {deleteId === item._id ? (
+                    <div className="flex gap-1 bg-white p-1 rounded-lg">
+                      <button onClick={() => handleDelete(item._id)} className="h-7 w-7 bg-red-500 text-white rounded-md flex items-center justify-center"><Check size={14} /></button>
+                      <button onClick={() => setDeleteId(null)} className="h-7 w-7 bg-gray-100 text-gray-700 rounded-md flex items-center justify-center"><X size={14} /></button>
                     </div>
                   ) : (
                     <button
-                      onClick={() => { setTempTitle(video.title); setEditingTitle(video.id); }}
-                      className="w-full text-left group"
+                      onClick={() => setDeleteId(item._id)}
+                      className="h-8 w-8 bg-red-500 text-white rounded-lg flex items-center justify-center hover:bg-red-600 shadow-lg shadow-red-500/30"
                     >
-                      <p className="text-base font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">{video.title}</p>
+                      <Trash2 size={16} />
                     </button>
                   )}
-                  <div className="flex items-center justify-between mt-1">
-                    <p className="text-xs text-gray-400">{video.size} · {video.uploadedAt}</p>
-                    {deleteId === video.id ? (
-                      <div className="flex gap-1">
-                        <button onClick={() => { setVideos(videos.filter((v) => v.id !== video.id)); setDeleteId(null); }} className="px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-md hover:bg-red-600">Delete</button>
-                        <button onClick={() => setDeleteId(null)} className="px-2 py-1 text-xs font-semibold border border-gray-300 text-gray-500 rounded-md hover:bg-gray-50">Cancel</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => setDeleteId(video.id)} className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
                 </div>
               </div>
             ))}
-
-            {/* Add more tile */}
-            <div
-              onClick={() => fileRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors min-h-[180px]"
-            >
-              <Upload size={24} className="text-gray-400" />
-              <span className="text-sm font-semibold text-gray-400">Add More Videos</span>
-            </div>
           </div>
         )}
       </div>
