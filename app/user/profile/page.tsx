@@ -25,6 +25,7 @@ export default function ProfilePage() {
     instagramLink: "",
     messageNumber: "",
     logo: "",
+    companyName: "",
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -55,6 +56,7 @@ export default function ProfilePage() {
         instagramLink: user.instagramLink || "",
         messageNumber: user.messageNumber || "",
         logo: user.logo || "",
+        companyName: user.companyName || "",
       });
     }
   }, [user]);
@@ -103,6 +105,7 @@ export default function ProfilePage() {
     formData.append("facebookLink", localProfile.facebookLink);
     formData.append("instagramLink", localProfile.instagramLink);
     formData.append("messageNumber", localProfile.messageNumber);
+    formData.append("companyName", localProfile.companyName);
 
     if (selectedFile) {
       formData.append("profileImage", selectedFile);
@@ -132,6 +135,7 @@ export default function ProfilePage() {
     { key: "location", label: "Address", icon: MapPin, placeholder: "Enter address" },
     { key: "timing", label: "Timing", icon: Clock, placeholder: "e.g. Mon-Sat: 9AM - 6PM" },
     { key: "website", label: "Website", icon: Globe, placeholder: "Enter website URL" },
+    { key: "companyName", label: "Company Name", icon: Globe, placeholder: "Enter company name" },
     { key: "facebookLink", label: "Facebook Link", icon: Globe, placeholder: "Enter Facebook URL" },
     { key: "instagramLink", label: "Instagram Link", icon: Globe, placeholder: "Enter Instagram URL" },
   ];

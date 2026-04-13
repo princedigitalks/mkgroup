@@ -112,14 +112,19 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
         className="w-full bg-[#003B46] rounded-2xl p-5 flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all shadow-xl border-2 border-white/30 h-28 mt-2"
       >
         {logoUrl ? (
-          <div className="relative w-full h-full">
-            <Image 
-              src={logoUrl} 
-              alt="Logo" 
-              fill 
-              className="object-contain" 
-              unoptimized
-            />
+          <div className="flex flex-col items-center gap-2 w-full h-full">
+            <div className="relative w-20 h-10">
+              <Image 
+                src={logoUrl} 
+                alt="Logo" 
+                fill 
+                className="object-contain" 
+                unoptimized
+              />
+            </div>
+            <div className="text-xl font-black tracking-[0.2em] leading-tight uppercase truncate max-w-full">
+              {builderData?.companyName || "MK GROUP"}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center">
@@ -129,7 +134,9 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
                  <div className="text-[#003B46] font-black text-[9px]">H</div>
               </div>
             </div>
-            <div className="text-2xl font-black tracking-[0.2em] leading-tight uppercase">MK GROUP</div>
+            <div className="text-2xl font-black tracking-[0.2em] leading-tight uppercase">
+              {builderData?.companyName || "MK GROUP"}
+            </div>
           </div>
         )}
       </div>
@@ -503,39 +510,68 @@ export const PhotoGalleryView = () => (
 
 export const ContactPersonView = () => {
   const builderData = useContext(BuilderContext);
-  const name = builderData?.name || "HIRENBHAI K. PATEL";
+  const [persons, setPersons] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
   
-  const getProfileImage = () => {
-    if (builderData?.profileImage) {
+  React.useEffect(() => {
+    const fetchPersons = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact-person/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setPersons(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch contact persons:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPersons();
+  }, [builderData?._id]);
+
+  const getPersonImage = (imageName: string) => {
+    if (imageName) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
       const baseUrl = apiUrl.split("/v1/api")[0];
-      return `${baseUrl}/builder/${builderData.profileImage}`;
+      return `${baseUrl}/builder/${imageName}`;
     }
-    return "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-N6qT3990S8v7R5Y3m4H3n7O2R1S5e8.png";
+    return "/profile.png";
   };
 
   return (
   <div className="px-6 space-y-4 pb-10 pt-4">
-    <div className="bg-[#6B849E] text-white py-2.5 px-4 rounded-xl text-center font-black text-sm shadow-md border border-white/20 uppercase tracking-widest mb-4">M K GROUP</div>
-    {[1, 2].map((i) => (
-      <div key={i} className="bg-white/40 rounded-2xl p-3 flex space-x-4 border border-white/60 shadow-sm backdrop-blur-sm group hover:bg-white/60 transition-all">
-        <div className="relative w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 border-2 border-black/80 shadow-md">
-          <Image 
-            src={getProfileImage()} 
-            alt={name} 
-            fill 
-            className="object-cover" 
-            referrerPolicy="no-referrer"
-            unoptimized
-          />
-        </div>
-        <div className="flex flex-col justify-center space-y-1">
-          <h3 className="font-black text-[#333333] text-lg leading-tight tracking-tight">{name}</h3>
-          <p className="text-xs font-bold text-gray-600">Builder & Developer</p>
-          <p className="text-xs font-bold text-gray-600">Director</p>
-        </div>
+    <div className="bg-[#6B849E] text-white py-2.5 px-4 rounded-xl text-center font-black text-sm shadow-md border border-white/20 uppercase tracking-widest mb-4">
+      {builderData?.companyName || "M K GROUP"}
+    </div>
+    
+    {loading ? (
+      <div className="flex justify-center py-10">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
       </div>
-    ))}
+    ) : persons.length > 0 ? (
+      persons.map((person) => (
+        <div key={person._id} className="bg-white/40 rounded-2xl p-3 flex space-x-4 border border-white/60 shadow-sm backdrop-blur-sm group hover:bg-white/60 transition-all">
+          <div className="relative w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 border-2 border-black/80 shadow-md">
+            <Image 
+              src={getPersonImage(person.image)} 
+              alt={person.name} 
+              fill 
+              className="object-cover" 
+              unoptimized
+            />
+          </div>
+          <div className="flex flex-col justify-center space-y-1">
+            <h3 className="font-black text-[#333333] text-lg leading-tight tracking-tight">{person.name}</h3>
+            <p className="text-xs font-bold text-gray-600">{person.designation}</p>
+            <p className="text-xs font-bold text-gray-600">{person.role}</p>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="text-center py-10 text-gray-500 font-bold">No contact persons added yet</div>
+    )}
   </div>
   );
 };
