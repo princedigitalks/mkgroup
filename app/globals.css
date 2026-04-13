@@ -36,4 +36,34 @@
   .glass-dark {
     @apply bg-black/10 backdrop-blur-xl border border-white/10;
   }
+
+  .rich-content ul {
+    list-style-type: disc !important;
+    padding-left: 1.5rem !important;
+    margin: 0.5rem 0 !important;
+  }
+  .rich-content ol {
+    list-style-type: decimal !important;
+    padding-left: 1.5rem !important;
+    margin: 0.5rem 0 !important;
+  }
+  .rich-content {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    overflow-x: hidden !important;
+  }
+
+  .rich-content p {
+    margin-bottom: 0.75rem !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    white-space: pre-wrap !important;
+  }
+  .rich-content b, .rich-content strong {
+    font-weight: bold !important;
+  }
+  .rich-content i, .rich-content em {
+    font-style: italic !important;
+  }
 }

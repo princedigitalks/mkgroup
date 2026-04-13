@@ -401,26 +401,81 @@ export const DashboardView = ({ setView }: ViewProps) => {
   );
 };
 
-export const AboutUsView = () => (
-  <div className="px-6 space-y-4 text-gray-800 pb-10 pt-4">
-    <div className="bg-[#6B849E] text-white py-2.5 px-4 rounded-xl text-center font-black text-sm shadow-md border border-white/20 uppercase tracking-widest">M K GROUP</div>
-    <div className="space-y-5 pt-2">
-      <div className="border-b-2 border-gray-200 pb-1.5">
-        <h2 className="text-xl font-black text-[#333333]">ABOUT US</h2>
+export const AboutUsView = () => {
+  const builderData = useContext(BuilderContext);
+  const [sections, setSections] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchSections = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/about-section/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setSections(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch about sections:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSections();
+  }, [builderData?._id]);
+
+  const getSectionImage = (imageName: string) => {
+    if (imageName) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+      const baseUrl = apiUrl.split("/v1/api")[0];
+      return `${baseUrl}/builder/${imageName}`;
+    }
+    return "";
+  };
+
+  return (
+    <div className="px-6 space-y-4 text-gray-800 pb-10 pt-4">
+      <div className="bg-[#6B849E] text-white py-2.5 px-4 rounded-xl text-center font-black text-sm shadow-md border border-white/20 uppercase tracking-widest">
+        {builderData?.companyName || "M K GROUP"}
       </div>
-      <p className="text-sm font-bold leading-relaxed text-gray-700">Those wishing to own a piece of paradise rejoicing nature&apos;s tranquilly and modern day opulence have found the right address.</p>
-      <p className="text-[13px] font-medium leading-relaxed text-gray-600">Every apartment of this splendid development gets to enjoy the breathtakingly beautiful views of the shimmering Tapi river. The cool breeze, ample sunlight and uninterrupted skyline views are the bonus.</p>
-      <ul className="space-y-2.5 text-[13px] font-bold text-gray-700 ml-1">
-        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-gray-800 rounded-full" /> Sky-Scaling Towers</li>
-        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-gray-800 rounded-full" /> All Apartments Riverside Facing</li>
-        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-gray-800 rounded-full" /> Around 3.5 mt. Floor Height</li>
-        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-gray-800 rounded-full" /> 2 Level Amenities & Clubhouse</li>
-        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-gray-800 rounded-full" /> Lush Green Landscape Area</li>
-        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-gray-800 rounded-full" /> Spacious Car Parking in Basement bonus.</li>
-      </ul>
+      
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
+        </div>
+      ) : sections.length > 0 ? (
+        <div className="space-y-8 pt-2 overflow-hidden">
+          {sections.map((section) => (
+            <div key={section._id} className="space-y-4 break-words overflow-hidden">
+              <div className="border-b-2 border-gray-200 pb-1.5 flex items-center justify-between">
+                <h2 className="text-xl font-black text-[#333333] uppercase">{section.title}</h2>
+              </div>
+              
+              {section.image && (
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+                  <Image 
+                    src={getSectionImage(section.image)} 
+                    alt={section.title} 
+                    fill 
+                    className="object-cover" 
+                    unoptimized
+                  />
+                </div>
+              )}
+              
+              <div 
+                className="text-sm font-medium leading-relaxed text-gray-700 text-left rich-content"
+                dangerouslySetInnerHTML={{ __html: section.content }}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-10 text-gray-500 font-bold">No about information added yet</div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export const AppointmentView = () => (
   <div className="px-6 space-y-4 pb-10 pt-4">
