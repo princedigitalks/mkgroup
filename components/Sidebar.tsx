@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Image as ImageIcon, 
-  FileText, 
-  Mail, 
+import {
+  LayoutDashboard,
+  Image as ImageIcon,
+  FileText,
+  Mail,
   LogOut,
   Info,
   Video,
@@ -81,7 +81,7 @@ export default function Sidebar({ type }: SidebarProps) {
           <span className={type === 'admin' ? "text-gray-400" : "text-blue-600"}>Panel</span>
         </span>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto py-4 px-3">
         <div className="space-y-0.5">
           {links.map((link) => {

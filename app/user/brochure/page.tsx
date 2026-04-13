@@ -1,121 +1,209 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Plus, Trash2, Check, X, FileText, Download, Upload } from "lucide-react";
+import { Plus, Trash2, Check, X, FileText, Upload, Loader2, Download, FilePlus, FileUp } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { toast } from "sonner";
+import api from "@/lib/axios";
 
 interface Brochure {
-  id: number;
+  _id: string;
   title: string;
-  fileName: string;
-  fileUrl: string;
-  fileSize: string;
-  uploadedAt: string;
+  file: string;
+  fileSize?: string;
 }
 
 export default function BrochurePage() {
-  const [brochures, setBrochures] = useState<Brochure[]>([
-    { id: 1, title: "Company Profile 2025", fileName: "company-profile.pdf", fileUrl: "#", fileSize: "2.4 MB", uploadedAt: "2025-01-15" },
-  ]);
-  const [showForm, setShowForm] = useState(false);
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [brochures, setBrochures] = useState<Brochure[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [title, setTitle] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const formatSize = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  useEffect(() => {
+    if (user?._id) {
+      fetchBrochures();
+    }
+  }, [user]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === "application/pdf") setSelectedFile(file);
-    else alert("Please select a PDF file.");
+  const fetchBrochures = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/brochure/user/${user._id}`);
+      if (response.data.status === "Success") {
+        setBrochures(response.data.data);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to fetch brochures");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpload = () => {
-    if (!title.trim() || !selectedFile) return;
-    setBrochures([...brochures, { id: Date.now(), title: title.trim(), fileName: selectedFile.name, fileUrl: URL.createObjectURL(selectedFile), fileSize: formatSize(selectedFile.size), uploadedAt: new Date().toISOString().split("T")[0] }]);
-    setTitle(""); setSelectedFile(null); setShowForm(false);
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!title.trim()) {
+      toast.error("Please enter a brochure title first");
+      e.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("brochure", file);
+
+    try {
+      setIsUploading(true);
+      const response = await api.post("/brochure/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (response.data.status === "Success") {
+        setBrochures(prev => [response.data.data, ...prev]);
+        setTitle("");
+        setIsModalOpen(false);
+        toast.success("Brochure uploaded successfully");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to upload brochure");
+    } finally {
+      setIsUploading(false);
+      if(fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await api.delete(`/brochure/delete/${id}`);
+      if (response.data.status === "Success") {
+        toast.success("Brochure deleted successfully");
+        setBrochures(brochures.filter((b) => b._id !== id));
+        setDeleteId(null);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete brochure");
+    }
   };
 
   return (
     <DashboardLayout type="user">
-      <div className="space-y-4">
-
+      <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white border border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border border-gray-100 rounded-2xl px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Brochures</h2>
-            <p className="text-sm text-gray-400 mt-0.5">{brochures.length} PDF{brochures.length !== 1 ? "s" : ""} uploaded</p>
+            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Brochures</h2>
+            <p className="text-sm text-gray-400 mt-0.5">{brochures.length} files uploaded</p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-            {showForm ? <><X size={15} /> Cancel</> : <><Plus size={15} /> Upload PDF</>}
+          
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 bg-[#003B46] text-white px-6 py-2.5 text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-lg"
+          >
+            <Plus size={18} /> ADD NEW BROCHURE
           </button>
         </div>
 
-        {/* Upload Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-200 p-6 space-y-4">
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Upload New Brochure</p>
-            <div>
-              <label className="text-sm font-semibold text-gray-500 uppercase tracking-wider block mb-1">Title / Name *</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Company Profile 2025"
-                className="w-full border border-gray-300 bg-gray-50 px-3 py-2.5 text-base focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-gray-500 uppercase tracking-wider block mb-1">PDF File *</label>
-              <div onClick={() => fileRef.current?.click()} className="border-2 border-dashed border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-blue-50 transition-colors cursor-pointer px-6 py-10 flex flex-col items-center gap-3">
-                <Upload size={28} className="text-gray-400" />
-                {selectedFile ? (
-                  <div className="text-center">
-                    <p className="text-base font-semibold text-blue-600">{selectedFile.name}</p>
-                    <p className="text-sm text-gray-400">{formatSize(selectedFile.size)}</p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-base text-gray-500 font-medium">Click to select PDF file</p>
-                    <p className="text-sm text-gray-400">Only PDF files accepted</p>
-                  </div>
-                )}
-              </div>
-              <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={handleFileChange} />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => { setShowForm(false); setTitle(""); setSelectedFile(null); }} className="px-4 py-2 text-sm font-semibold text-gray-500 border border-gray-300 hover:bg-gray-50 rounded-lg">Cancel</button>
-              <button onClick={handleUpload} disabled={!title.trim() || !selectedFile} className="flex items-center gap-1.5 px-5 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                <Upload size={14} /> Upload
-              </button>
-            </div>
+        {/* Modal Overlay */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+             <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center mb-6">
+                   <h3 className="text-xl font-black text-[#003B46] uppercase">New Brochure</h3>
+                   <button onClick={() => setIsModalOpen(false)} className="p-2 text-gray-400 hover:text-gray-900 rounded-full transition-colors">
+                      <X size={24} />
+                   </button>
+                </div>
+
+                <div className="space-y-6">
+                   <div className="space-y-2">
+                      <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Brochure Name</label>
+                      <input 
+                        type="text" 
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="e.g. Project Master Plan"
+                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500/10 outline-none transition-all font-bold text-gray-700"
+                        autoFocus
+                      />
+                   </div>
+
+                   <div className="pt-2">
+                      <button
+                        onClick={() => fileRef.current?.click()}
+                        disabled={!title.trim() || isUploading}
+                        className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:grayscale"
+                      >
+                         {isUploading ? (
+                           <Loader2 className="animate-spin" size={20} />
+                         ) : (
+                           <>
+                             <FileUp size={20} />
+                             Select PDF & Upload
+                           </>
+                         )}
+                      </button>
+                      <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={handleUpload} />
+                   </div>
+
+                   <p className="text-[10px] text-gray-400 text-center font-bold">ONLY PDF FILES SUPPORTED</p>
+                </div>
+             </div>
           </div>
         )}
 
-        {/* List */}
-        <div className="bg-white border border-gray-200 divide-y divide-gray-100">
-          {brochures.length === 0 && <div className="px-6 py-12 text-center text-base text-gray-400">No brochures uploaded yet.</div>}
-          {brochures.map((b, idx) => (
-            <div key={b.id} className={`flex items-center gap-4 px-6 py-5 transition-colors ${idx % 2 === 0 ? "bg-white hover:bg-blue-50" : "bg-gray-50 hover:bg-blue-50"}`}>
-              <div className="h-12 w-12 bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
-                <FileText size={22} className="text-red-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-base font-semibold text-gray-900 truncate">{b.title}</p>
-                <p className="text-sm text-gray-400 truncate mt-0.5">{b.fileName} · {b.fileSize} · {b.uploadedAt}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <a href={b.fileUrl} download={b.fileName} className="flex items-center gap-1.5 border border-blue-300 bg-blue-50 text-blue-700 px-3 py-2 text-sm font-semibold hover:bg-blue-100 transition-colors rounded-lg">
-                  <Download size={14} /> Download
-                </a>
-                {deleteId === b.id ? (
-                  <>
-                    <button onClick={() => { setBrochures(brochures.filter((x) => x.id !== b.id)); setDeleteId(null); }} className="p-1.5 text-red-600 hover:bg-red-50"><Check size={15} /></button>
-                    <button onClick={() => setDeleteId(null)} className="p-1.5 text-gray-400 hover:bg-gray-100"><X size={15} /></button>
-                  </>
-                ) : (
-                  <button onClick={() => setDeleteId(b.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50"><Trash2 size={15} /></button>
-                )}
-              </div>
+        {/* Brochures List */}
+        {loading ? (
+            <div className="flex items-center justify-center py-24">
+                <Loader2 className="animate-spin text-blue-600" size={40} />
             </div>
-          ))}
-        </div>
+        ) : brochures.length === 0 ? (
+          <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl px-6 py-20 flex flex-col items-center gap-4">
+            <div className="h-16 w-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
+              <FileText size={32} />
+            </div>
+            <div className="text-center">
+                <p className="text-lg font-bold text-gray-700">No Brochures Found</p>
+                <p className="text-sm text-gray-400 mt-1">Upload PDF brochures for your projects</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {brochures.map((item) => (
+              <div key={item._id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center gap-4 relative group">
+                <div className="h-14 w-14 bg-red-50 text-red-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FileText size={28} />
+                </div>
+                <div className="flex-1 min-w-0">
+                   <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>
+                   <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-bold uppercase">PDF</span>
+                      <span className="text-[10px] text-gray-400 font-bold">{item.fileSize}</span>
+                   </div>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                   {deleteId === item._id ? (
+                      <div className="flex gap-1 animate-in fade-in zoom-in duration-200">
+                         <button onClick={() => handleDelete(item._id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Check size={18} /></button>
+                         <button onClick={() => setDeleteId(null)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><X size={18} /></button>
+                      </div>
+                   ) : (
+                      <button onClick={() => setDeleteId(item._id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                        <Trash2 size={18} />
+                      </button>
+                   )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

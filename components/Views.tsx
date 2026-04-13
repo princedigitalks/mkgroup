@@ -919,33 +919,90 @@ export const VideoGalleryView = () => {
   );
 };
 
-export const BrochureView = () => (
-  <div className="px-6 space-y-6 pt-4 pb-10">
-    <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Brochures PDF File</div>
-    <div className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100">
-      <div className="bg-[#003B46] p-4 flex items-center justify-between">
-        <div className="text-white">
-          <div className="text-xs font-serif tracking-widest">ANANTA</div>
-          <div className="text-[8px] tracking-[0.3em]">HEIGHTS</div>
-        </div>
-        <div className="relative w-12 h-12 rounded-md overflow-hidden">
-          <Image src="https://picsum.photos/seed/mini/100/100" alt="Mini" fill className="object-cover" referrerPolicy="no-referrer" />
-        </div>
+export const BrochureView = () => {
+  const builderData = useContext(BuilderContext);
+  const [brochures, setBrochures] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchBrochures = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brochure/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setBrochures(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch brochures:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBrochures();
+  }, [builderData?._id]);
+
+  const getFileUrl = (fileName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${fileName}`;
+  };
+
+  return (
+    <div className="px-6 space-y-6 pt-4 pb-10">
+      <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20 uppercase tracking-widest">
+        Brochures PDF File
       </div>
-      <div className="p-4 flex items-center space-x-4">
-        <div className="bg-red-500 p-2 rounded-lg text-white"><FileText size={24} /></div>
-        <div className="flex-1">
-          <p className="text-[10px] text-gray-600 leading-tight">Ananta Heights offers a beautifully designed space that you&apos;ll love to call home.</p>
-          <p className="text-[10px] font-bold text-gray-400 mt-1">40 pages • PDF • 18 MB</p>
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
         </div>
-        <button className="bg-gray-100 p-2 rounded-full text-gray-400"><Download size={20} /></button>
-      </div>
-      <div className="px-4 pb-2 text-right text-[10px] text-gray-400">4:33 pm</div>
+      ) : brochures.length > 0 ? (
+        brochures.map((item) => (
+          <div key={item._id} className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 mb-4">
+            <div className="bg-[#003B46] p-4 flex items-center justify-between">
+              <div className="text-white">
+                <div className="text-xs font-serif tracking-widest uppercase truncate max-w-[150px]">{item.title}</div>
+                <div className="text-[8px] tracking-[0.3em] uppercase">{builderData?.companyName || "MK GROUP"}</div>
+              </div>
+              <div className="relative w-12 h-12 rounded-md overflow-hidden bg-white/10 flex items-center justify-center">
+                 <FileText className="text-white/50" />
+              </div>
+            </div>
+            <div className="p-4 flex items-center space-x-4">
+              <div className="bg-red-500 p-2 rounded-lg text-white">
+                <FileText size={24} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold text-gray-800 truncate">{item.title}</p>
+                <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase">PDF • {item.fileSize}</p>
+              </div>
+              <button 
+                onClick={() => window.open(getFileUrl(item.file), '_blank')}
+                className="bg-gray-100 p-2.5 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                <Download size={20} />
+              </button>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+           <FileText className="mx-auto text-gray-300 mb-2" size={40} />
+           <p className="text-gray-400 font-bold text-xs uppercase">No Brochures Available</p>
+        </div>
+      )}
+
+      {brochures.length > 0 && (
+        <div className="space-y-4">
+          <textarea placeholder="Text Message if any" className="w-full bg-white rounded-2xl py-3 px-4 text-sm border border-gray-200 outline-none h-24 resize-none shadow-sm" />
+          <button className="w-full bg-[#003B46] py-3 rounded-md font-bold text-white shadow-lg uppercase tracking-widest text-sm">Send Inquiry</button>
+        </div>
+      )}
     </div>
-    <textarea placeholder="Text Message if any" className="w-full bg-white rounded-2xl py-3 px-4 text-sm border border-gray-200 outline-none h-24 resize-none" />
-    <button className="w-full bg-[#6B849E] py-3 rounded-md font-bold text-white shadow-md">Download Brochure</button>
-  </div>
-);
+  );
+};
 
 export const InquiryView = () => (
   <div className="px-6 space-y-4 pt-4 pb-10">
