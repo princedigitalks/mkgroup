@@ -633,41 +633,92 @@ export const ContactPersonView = () => {
 
 export const LocationView = () => {
   const builderData = useContext(BuilderContext);
-  const name = builderData?.name || "MK GROUP";
-  const location = builderData?.location || "Office : B-86 Trikam Nagar Society, Near V-1 Bombay Market, L.H Road, Surat -395003";
-  const number = builderData?.number || "98252 22223";
-  const website = builderData?.website || "www.mkgroup.com";
+  const [locations, setLocations] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchLocations = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/location/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setLocations(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch locations:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLocations();
+  }, [builderData?._id]);
 
   return (
-  <div className="px-4 space-y-6 pt-4 pb-10">
-    <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Location and Address</div>
-    {[
-      { title: name, addr: location },
-      { title: name, addr: 'Ananta Heights : Near, Savaji Korat Brg, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101' }
-    ].map((loc, i) => (
-      <div key={i} className="space-y-2">
-        <h3 className="font-bold text-lg text-[#003B46]">{loc.title}</h3>
-        <div className="space-y-1 text-xs text-gray-700">
-          <div className="flex items-start space-x-2">
-            <MapPin size={14} className="mt-0.5 flex-shrink-0" />
-            <span>{loc.addr}</span>
-          </div>
-          <div className="flex items-center space-x-2"><Phone size={14} /><span>{number}</span></div>
-          <div className="flex items-center space-x-2"><Mail size={14} /><span>hirenpatel@gmail.com</span></div>
-          <div className="flex items-center space-x-2"><Globe size={14} /><span>{website}</span></div>
+    <div className="px-4 space-y-6 pt-4 pb-10">
+      <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Location and Address</div>
+      
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
         </div>
-        <div className="w-full h-32 bg-gray-200 rounded-xl overflow-hidden relative border border-gray-300">
-          <Image src="https://picsum.photos/seed/map/400/200" alt="Map" fill className="object-cover" referrerPolicy="no-referrer" />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-            <div className="bg-white px-4 py-1.5 rounded-full flex items-center space-x-2 shadow-lg">
-              <div className="bg-red-500 text-white p-1 rounded-full"><MapPin size={12} /></div>
-              <span className="text-xs font-bold">Google Map</span>
+      ) : locations.length > 0 ? (
+        locations.map((loc, i) => (
+          <div key={loc._id} className="space-y-3 bg-white/40 p-4 rounded-2xl border border-white/60 backdrop-blur-sm">
+            <h3 className="font-black text-lg text-[#003B46] uppercase border-b border-gray-100 pb-1">{loc.title}</h3>
+            <div className="space-y-2 text-xs text-gray-700">
+              <div className="flex items-start space-x-2">
+                <MapPin size={14} className="mt-0.5 flex-shrink-0 text-blue-600" />
+                <span className="font-bold">{loc.address}</span>
+              </div>
+              {loc.whatsappNumber && (
+                <div className="flex items-center space-x-2">
+                  <Phone size={14} className="text-emerald-600" />
+                  <span className="font-bold">{loc.whatsappNumber}</span>
+                </div>
+              )}
+              {loc.email && (
+                <div className="flex items-center space-x-2">
+                  <Mail size={14} className="text-rose-500" />
+                  <span className="font-bold">{loc.email}</span>
+                </div>
+              )}
+              {loc.website && (
+                <div className="flex items-center space-x-2">
+                  <Globe size={14} className="text-blue-500" />
+                  <span className="font-bold">{loc.website}</span>
+                </div>
+              )}
             </div>
+            
+            {loc.googleMapLink && (
+              <a 
+                href={loc.googleMapLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block w-full h-32 bg-gray-200 rounded-xl overflow-hidden relative border border-gray-300 mt-2 hover:opacity-90 transition-opacity"
+              >
+                <Image 
+                   src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=400&h=200&auto=format&fit=crop" 
+                   alt="Map" 
+                   fill 
+                   className="object-cover" 
+                   unoptimized 
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                  <div className="bg-white px-4 py-1.5 rounded-full flex items-center space-x-2 shadow-lg">
+                    <div className="bg-red-500 text-white p-1 rounded-full"><MapPin size={12} /></div>
+                    <span className="text-xs font-bold">Google Map</span>
+                  </div>
+                </div>
+              </a>
+            )}
           </div>
-        </div>
-      </div>
-    ))}
-  </div>
+        ))
+      ) : (
+        <div className="text-center py-10 text-gray-500 font-bold">No locations added yet</div>
+      )}
+    </div>
   );
 };
 
