@@ -56,6 +56,7 @@ export default function Sidebar({ type }: SidebarProps) {
     { label: "Video Gallery", href: "/user/videos", icon: Video },
     { label: "Brochure", href: "/user/brochure", icon: FileText },
     { label: "QR Card", href: "/user/qr", icon: QrCode },
+    { label: "Popup", href: "/user/popup", icon: MessageSquare },
     { label: "Logout", action: handleLogout, icon: LogOut, color: "text-red-500 hover:bg-red-50" },
   ];
 

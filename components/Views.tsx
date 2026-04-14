@@ -6,10 +6,12 @@ import {
   Phone, MapPin, Clock, Globe, Share2, Edit, User, Info, Calendar,
   Image as ImageIcon, Video, HelpCircle, FileText, MessageSquare,
   Star, ThumbsUp, ThumbsDown, ChevronLeft, ChevronRight, Box,
-  Mail, Mic, Plus, Download, Bell, Eye, Send, Check
+  Mail, Mic, Plus, Download, Bell, Eye, Send, Check, X
 } from 'lucide-react';
 import { useContext } from 'react';
 import { BuilderContext } from '@/app/page';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 type View =
   | 'home'
@@ -50,6 +52,9 @@ const ContactItem = ({ icon: Icon, text, isName = false, isAddress = false }: { 
 
 export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewProps) => {
   const builderData = useContext(BuilderContext);
+  const isMobile = useIsMobile();
+  const [isCheckingStatus, setIsCheckingStatus] = React.useState(false);
+
   const name = builderData?.name || "HIRENBHAI K. PATEL";
   const number = builderData?.number || "9825222223";
   const location = builderData?.location || "B-86 Trikam Nagar Society, Near V-1 Bombay Market, L.H Road, Surat -395003";
@@ -159,30 +164,45 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
         <div className='flex items-center mx-4 mb-5'>
           <button
             type="button"
-            aria-pressed={startFromHome}
-            onClick={() => {
-              const next = !startFromHome;
-              setStartFromHome(next);
-              if (next) {
-                // Delay the navigation to dashboard to let the "ON" state be visible
-                setTimeout(() => {
-                  setView('dashboard');
-                }, 500);
+            disabled={isCheckingStatus}
+            onClick={async () => {
+              if (startFromHome) return; // Only allow switching from OFF to ON
+
+              try {
+                setIsCheckingStatus(true);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/status/${builderData?.userId}`);
+                const result = await response.json();
+
+                if (result.status === "Success" && result.data.isActive) {
+                  setStartFromHome(true);
+                  // Delay the navigation
+                  setTimeout(() => {
+                    setView('popup');
+                  }, 500);
+                } else {
+                  toast.error("This profile is currently inactive. Please contact admin.");
+                }
+              } catch (error) {
+                toast.error("Unable to verify profile status. Please try again.");
+              } finally {
+                setIsCheckingStatus(false);
               }
             }}
-            className="relative w-36 h-11 flex items-center group"
+            className="relative w-36 h-11 flex items-center group disabled:opacity-70"
           >
             <div
               className={`absolute inset-0 rounded-full transition-colors duration-300 border-[3.5px] border-white shadow-lg ${startFromHome ? 'bg-[#32CD32]' : 'bg-red-600'
                 }`}
             />
             <div
-              className={`absolute w-[60px] h-8 bg-white rounded-full shadow-md border border-gray-100 transition-transform duration-300 z-10 ${startFromHome ? 'translate-x-1.5' : 'translate-x-[68px]'
+              className={`absolute w-[60px] h-8 bg-white rounded-full shadow-md border border-gray-100 transition-transform duration-300 z-10 flex items-center justify-center ${startFromHome ? 'translate-x-[68px]' : 'translate-x-1.5'
                 }`}
-            />
-            <div className="absolute inset-0 flex items-center justify-around px-4 z-0">
-              <span className={`text-[10px] font-black transition-opacity duration-300 ${startFromHome ? 'opacity-0' : 'text-white opacity-100 ml-[-20px]'}`}>OFF</span>
-              <span className={`text-xs font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100 ml-[40px]' : 'opacity-0'}`}>ON</span>
+            >
+               {isCheckingStatus && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" />}
+            </div>
+            <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
+              <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'opacity-0' : 'text-white opacity-100'}`}>OFF</span>
+              <span className={`text-xs font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100' : 'opacity-0'}`}>ON</span>
             </div>
           </button>
         </div>
@@ -1204,27 +1224,205 @@ export const DropboxView = () => (
   </div>
 );
 
-export const PopupView = () => (
-  <div className="px-6 space-y-4 pt-4 pb-10">
-    <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">Popup</div>
-    <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5]">
-      <Image
-        src="https://picsum.photos/seed/diwali/600/800"
-        alt="Diwali"
-        fill
-        className="object-cover"
-        referrerPolicy="no-referrer"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-pink-900/40 flex flex-col items-center justify-center p-6 text-center">
-        <div className="text-white space-y-2">
-          <div className="text-sm font-bold tracking-widest">HAPPY</div>
-          <div className="text-4xl font-serif font-bold text-yellow-400">Diwali</div>
-        </div>
+export const PopupView = ({ setView }: ViewProps) => {
+  const builderData = useContext(BuilderContext);
+  const [popup, setPopup] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchActivePopup = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/popup/active/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setPopup(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch active popup:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchActivePopup();
+  }, [builderData?._id]);
+
+  const getImageUrl = (imageName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${imageName}`;
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" /></div>;
+  }
+
+  if (!popup) {
+    // If no active popup, skip directly to dashboard
+    setView('dashboard');
+    return null;
+  }
+
+  return (
+    <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+      <div className="bg-white rounded-[40px] w-full max-w-[340px] relative shadow-2xl overflow-hidden border-4 border-white animate-in zoom-in-95 duration-300">
+        <button 
+          onClick={(e) => { e.stopPropagation(); setView('dashboard'); }}
+          className="absolute top-4 right-4 p-2 bg-black/10 backdrop-blur-md rounded-full text-white hover:bg-black/20 transition-all z-50"
+        >
+          <X size={18} strokeWidth={3} />
+        </button>
+
+        {popup.type === 'image' ? (
+          <div className="relative aspect-[4/5] w-full h-[400px]">
+            <Image
+              src={getImageUrl(popup.image)}
+              alt="Promotion"
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+        ) : (
+          <div className="p-10 space-y-6 flex flex-col items-center text-center">
+             <div className="h-16 w-16 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 mb-2">
+                <Bell size={32} />
+             </div>
+             <p className="text-lg font-black text-gray-800 leading-tight">
+               {popup.content}
+             </p>
+             <button 
+              onClick={() => setView('dashboard')}
+              className="mt-4 bg-[#003B46] text-white w-full py-4 rounded-2xl font-black shadow-lg hover:scale-[1.02] transition-all text-[11px] tracking-widest uppercase"
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
     </div>
-    <div className="bg-white rounded-2xl p-4 space-y-2 shadow-md border border-gray-100">
-      <h4 className="text-xs font-bold text-gray-800">Important Message</h4>
-      <p className="text-[10px] text-gray-600 leading-relaxed">Dear office is closed 12/11/2025 to 22/11/2025 during deepawali vocation.</p>
+  );
+};
+
+export const AdvertisementView = () => {
+  const builderData = useContext(BuilderContext);
+  const [ads, setAds] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState<"Upcoming" | "Running" | "Completed">("Upcoming");
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const fetchAds = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/advertisement/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setAds(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch ads:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAds();
+  }, [builderData?._id]);
+
+  const getImageUrl = (imageName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${imageName}`;
+  };
+
+  const filteredAds = ads.filter((a) => a.type === activeTab);
+  const currentAd = filteredAds[currentIndex];
+
+  const handleTabChange = (tab: "Upcoming" | "Running" | "Completed") => {
+    setActiveTab(tab);
+    setCurrentIndex(0);
+  };
+
+  return (
+    <div className="px-4 space-y-4 pt-4 pb-10">
+      <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">
+        Advertisements
+      </div>
+
+      <div className="relative px-8">
+        {currentAd?.note && (
+          <div className="mb-3 flex justify-start">
+            <span className="bg-white px-5 py-2 rounded-xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50">
+              {currentAd.note}
+            </span>
+          </div>
+        )}
+        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] bg-gray-100 border border-gray-200">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
+            </div>
+          ) : currentAd ? (
+            <>
+              <Image
+                src={getImageUrl(currentAd.image)}
+                alt="Advertisement"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              
+              {/* Dots / Pager */}
+              {filteredAds.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 z-10">
+                  {filteredAds.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? "w-6 bg-white shadow-sm" : "w-1.5 bg-white/40"}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+              <ImageIcon size={48} />
+              <p className="text-xs font-bold mt-2 uppercase">No {activeTab} Projects</p>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Arrows Outside */}
+        {filteredAds.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : filteredAds.length - 1))}
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronLeft size={28} />
+            </button>
+            <button
+              onClick={() => setCurrentIndex((prev) => (prev < filteredAds.length - 1 ? prev + 1 : 0))}
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="flex justify-center flex-wrap gap-2">
+        {["Upcoming", "Running", "Completed"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => handleTabChange(tab as any)}
+            className={`px-4 py-2 rounded-xl text-[10px] font-black shadow-md border transition-all uppercase tracking-wider ${activeTab === tab ? 'bg-[#003B46] text-white border-[#003B46]' : 'bg-white text-gray-600 border-gray-200'}`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};

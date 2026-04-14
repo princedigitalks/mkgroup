@@ -23,6 +23,7 @@ interface MobileFrameProps {
   children: React.ReactNode;
   currentView: View;
   setView: (v: View) => void;
+  setStartFromHome?: (v: boolean) => void;
 }
 
 const VIEW_LABELS: Record<string, string> = {
@@ -39,10 +40,11 @@ const VIEW_LABELS: Record<string, string> = {
   'popup': 'Popup',
 };
 
-export const MobileFrame = ({ children, currentView, setView }: MobileFrameProps) => {
+export const MobileFrame = ({ children, currentView, setView, setStartFromHome }: MobileFrameProps) => {
   const isHome = currentView === 'home';
   const isDashboard = currentView === 'dashboard';
-  const isSubView = !isHome && !isDashboard;
+  const isPopup = currentView === 'popup';
+  const isSubView = !isHome && !isDashboard && !isPopup;
   const isMobile = useIsMobile();
 
   return (
@@ -74,11 +76,14 @@ export const MobileFrame = ({ children, currentView, setView }: MobileFrameProps
           </div>
 
           {/* Bottom Nav — Dashboard */}
-          {isDashboard && (
-            <div className={`flex-shrink-0 bg-[#004A7C] border-t border-white/10 shadow-[0_-8px_20px_rgba(0,0,0,0.15)] ${isMobile ? 'fixed bottom-0 left-0 right-0  z-40' : 'rounded-b-[48px]'}`}>
+          {isDashboard && !isPopup && (
+           <div className={`flex-shrink-0 bg-[#004A7C] border-t border-white/10 shadow-[0_-8px_20px_rgba(0,0,0,0.15)] ${isMobile ? 'fixed bottom-0 left-0 right-0  z-40' : 'rounded-b-[48px]'}`}>
               <div className="flex items-center justify-around py-2 px-2">
                 {[
-                  { icon: Home, label: 'home', action: () => setView('home') },
+                  { icon: Home, label: 'home', action: () => {
+                    setView('home');
+                    if (setStartFromHome) setStartFromHome(false);
+                  } },
                   { icon: Box, label: 'dropbox', action: () => setView('dropbox') },
                   { icon: FileText, label: 'correction', action: () => setView('brochure') },
                   { icon: Share2, label: 'share', action: () => {} },
