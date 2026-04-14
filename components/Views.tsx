@@ -444,7 +444,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
             className="object-contain"
           />
         </button>
-        <button
+        {/* <button
           onClick={() => {
             const n = builderData?.name || "MK GROUP";
             const tel = builderData?.number || "";
@@ -467,7 +467,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
             height={50}
             className="object-contain"
           />
-        </button>
+        </button> */}
 
         {/* Select Language - Now on Right, using Native Select Overlay */}
         <div className="flex-1 relative group">
