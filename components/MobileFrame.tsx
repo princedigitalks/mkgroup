@@ -23,6 +23,7 @@ interface MobileFrameProps {
   children: React.ReactNode;
   currentView: View;
   setView: (v: View) => void;
+  setStartFromHome?: (v: boolean) => void;
 }
 
 const VIEW_LABELS: Record<string, string> = {
@@ -39,7 +40,7 @@ const VIEW_LABELS: Record<string, string> = {
   'popup': 'Popup',
 };
 
-export const MobileFrame = ({ children, currentView, setView }: MobileFrameProps) => {
+export const MobileFrame = ({ children, currentView, setView, setStartFromHome }: MobileFrameProps) => {
   const isHome = currentView === 'home';
   const isDashboard = currentView === 'dashboard';
   const isPopup = currentView === 'popup';
@@ -79,7 +80,10 @@ export const MobileFrame = ({ children, currentView, setView }: MobileFrameProps
             <div className={`flex-shrink-0 bg-[#004A7C] border-t border-white/10 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] ${isMobile ? 'fixed bottom-0 w-full left-0 right-4  overflow-hidden z-40' : ''}`}>
               <div className="flex items-center justify-around py-3 px-2">
                 {[
-                  { icon: Home, label: 'home', action: () => setView('home') },
+                  { icon: Home, label: 'home', action: () => {
+                    setView('home');
+                    if (setStartFromHome) setStartFromHome(false);
+                  } },
                   { icon: Box, label: 'dropbox', action: () => setView('dropbox') },
                   { icon: FileText, label: 'correction', action: () => setView('brochure') },
                   { icon: Share2, label: 'share', action: () => {} },

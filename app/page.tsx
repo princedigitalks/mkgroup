@@ -207,7 +207,7 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
         </div>
       )}
 
-      <MobileFrame currentView={view} setView={setView}>
+      <MobileFrame currentView={view} setView={setView} setStartFromHome={setStartFromHome}>
       <AnimatePresence mode="wait">
         <motion.div
           key={view}

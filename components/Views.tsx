@@ -11,6 +11,7 @@ import {
 import { useContext } from 'react';
 import { BuilderContext } from '@/app/page';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 type View =
   | 'home'
@@ -53,6 +54,8 @@ const ContactItem = ({ icon: Icon, text, isName = false, isAddress = false }: { 
 export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewProps) => {
   const builderData = useContext(BuilderContext);
   const isMobile = useIsMobile();
+  const [isCheckingStatus, setIsCheckingStatus] = React.useState(false);
+
   const name = builderData?.name || "HIRENBHAI K. PATEL";
   const number = builderData?.number || "9825222223";
   const location = builderData?.location || "B-86 Trikam Nagar Society, Near V-1 Bombay Market, L.H Road, Surat -395003";
@@ -162,30 +165,45 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
         <div className='flex items-center mx-4 mb-5'>
           <button
             type="button"
-            aria-pressed={startFromHome}
-            onClick={() => {
-              const next = !startFromHome;
-              setStartFromHome(next);
-              if (next) {
-                // Delay the navigation to popup to let the "ON" state be visible
-                setTimeout(() => {
-                  setView('popup');
-                }, 500);
+            disabled={isCheckingStatus}
+            onClick={async () => {
+              if (startFromHome) return; // Only allow switching from OFF to ON
+
+              try {
+                setIsCheckingStatus(true);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/status/${builderData?.userId}`);
+                const result = await response.json();
+
+                if (result.status === "Success" && result.data.isActive) {
+                  setStartFromHome(true);
+                  // Delay the navigation
+                  setTimeout(() => {
+                    setView('popup');
+                  }, 500);
+                } else {
+                  toast.error("This profile is currently inactive. Please contact admin.");
+                }
+              } catch (error) {
+                toast.error("Unable to verify profile status. Please try again.");
+              } finally {
+                setIsCheckingStatus(false);
               }
             }}
-            className="relative w-36 h-11 flex items-center group"
+            className="relative w-36 h-11 flex items-center group disabled:opacity-70"
           >
             <div
               className={`absolute inset-0 rounded-full transition-colors duration-300 border-[3.5px] border-white shadow-lg ${startFromHome ? 'bg-[#32CD32]' : 'bg-red-600'
                 }`}
             />
             <div
-              className={`absolute w-[60px] h-8 bg-white rounded-full shadow-md border border-gray-100 transition-transform duration-300 z-10 ${startFromHome ? 'translate-x-1.5' : 'translate-x-[68px]'
+              className={`absolute w-[60px] h-8 bg-white rounded-full shadow-md border border-gray-100 transition-transform duration-300 z-10 flex items-center justify-center ${startFromHome ? 'translate-x-[68px]' : 'translate-x-1.5'
                 }`}
-            />
-            <div className="absolute inset-0 flex items-center justify-around px-4 z-0">
-              <span className={`text-[10px] font-black transition-opacity duration-300 ${startFromHome ? 'opacity-0' : 'text-white opacity-100 ml-[-20px]'}`}>OFF</span>
-              <span className={`text-xs font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100 ml-[40px]' : 'opacity-0'}`}>ON</span>
+            >
+               {isCheckingStatus && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" />}
+            </div>
+            <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
+              <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'opacity-0' : 'text-white opacity-100'}`}>OFF</span>
+              <span className={`text-xs font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100' : 'opacity-0'}`}>ON</span>
             </div>
           </button>
         </div>
