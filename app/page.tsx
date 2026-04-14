@@ -17,7 +17,8 @@ import {
   VideoGalleryView,
   BrochureView,
   InquiryView,
-  DropboxView
+  DropboxView,
+  AdvertisementView
 } from '@/components/Views';
 
 type View = 
@@ -32,6 +33,7 @@ type View =
   | 'brochure' 
   | 'inquiry' 
   | 'dropbox' 
+  | 'advertisement'
   | 'popup';
 
 type MKGroupAppProps = {
@@ -142,6 +144,7 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
       case 'brochure': return <BrochureView />;
       case 'inquiry': return <InquiryView />;
       case 'dropbox': return <DropboxView />;
+      case 'advertisement': return <AdvertisementView />;
       case 'popup': return <PopupView />;
       default:
         return (

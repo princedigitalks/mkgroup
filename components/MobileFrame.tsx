@@ -15,6 +15,7 @@ type View =
   | 'brochure'
   | 'inquiry'
   | 'dropbox'
+  | 'advertisement'
   | 'popup';
 
 interface MobileFrameProps {
@@ -33,6 +34,7 @@ const VIEW_LABELS: Record<string, string> = {
   'brochure': 'Brochure',
   'inquiry': 'Inquiry',
   'dropbox': 'Dropbox',
+  'advertisement': 'Advertisement',
   'popup': 'Popup',
 };
 

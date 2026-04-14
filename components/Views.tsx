@@ -23,6 +23,7 @@ type View =
   | 'brochure'
   | 'inquiry'
   | 'dropbox'
+  | 'advertisement'
   | 'popup';
 
 interface ViewProps {
@@ -240,7 +241,10 @@ export const DashboardView = ({ setView }: ViewProps) => {
           </div>
         </div>
 
-        <div className="w-full bg-[#002D35] rounded-[32px] p-8 flex flex-col items-center justify-center text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] shadow-xl min-h-[160px] mt-2">
+        <div 
+          onClick={() => setView('advertisement')}
+          className="w-full bg-[#002D35] rounded-[32px] p-8 flex flex-col items-center justify-center text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] shadow-xl min-h-[160px] mt-2 cursor-pointer hover:shadow-2xl transition-all"
+        >
           <div className="relative z-10 flex flex-col items-center w-full h-full">
             {logoUrl ? (
               <div className="relative w-40 h-24">
@@ -1228,3 +1232,126 @@ export const PopupView = () => (
     </div>
   </div>
 );
+
+export const AdvertisementView = () => {
+  const builderData = useContext(BuilderContext);
+  const [ads, setAds] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState<"Upcoming" | "Running" | "Completed">("Upcoming");
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const fetchAds = async () => {
+      if (!builderData?._id) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/advertisement/user/${builderData._id}`);
+        const result = await response.json();
+        if (result.status === "Success") {
+          setAds(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch ads:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAds();
+  }, [builderData?._id]);
+
+  const getImageUrl = (imageName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${imageName}`;
+  };
+
+  const filteredAds = ads.filter((a) => a.type === activeTab);
+  const currentAd = filteredAds[currentIndex];
+
+  const handleTabChange = (tab: "Upcoming" | "Running" | "Completed") => {
+    setActiveTab(tab);
+    setCurrentIndex(0);
+  };
+
+  return (
+    <div className="px-4 space-y-4 pt-4 pb-10">
+      <div className="bg-[#6B849E] text-white py-2 px-4 rounded-md text-center font-bold text-sm shadow-sm border border-white/20">
+        Advertisements
+      </div>
+
+      <div className="relative px-8">
+        {currentAd?.note && (
+          <div className="mb-3 flex justify-start">
+            <span className="bg-white px-5 py-2 rounded-xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50">
+              {currentAd.note}
+            </span>
+          </div>
+        )}
+        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] bg-gray-100 border border-gray-200">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
+            </div>
+          ) : currentAd ? (
+            <>
+              <Image
+                src={getImageUrl(currentAd.image)}
+                alt="Advertisement"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              
+              {/* Dots / Pager */}
+              {filteredAds.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 z-10">
+                  {filteredAds.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? "w-6 bg-white shadow-sm" : "w-1.5 bg-white/40"}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+              <ImageIcon size={48} />
+              <p className="text-xs font-bold mt-2 uppercase">No {activeTab} Projects</p>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Arrows Outside */}
+        {filteredAds.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : filteredAds.length - 1))}
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronLeft size={28} />
+            </button>
+            <button
+              onClick={() => setCurrentIndex((prev) => (prev < filteredAds.length - 1 ? prev + 1 : 0))}
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="flex justify-center flex-wrap gap-2">
+        {["Upcoming", "Running", "Completed"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => handleTabChange(tab as any)}
+            className={`px-4 py-2 rounded-xl text-[10px] font-black shadow-md border transition-all uppercase tracking-wider ${activeTab === tab ? 'bg-[#003B46] text-white border-[#003B46]' : 'bg-white text-gray-600 border-gray-200'}`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};

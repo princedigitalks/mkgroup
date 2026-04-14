@@ -17,7 +17,8 @@ import {
   QrCode,
   Calendar,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Megaphone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +51,7 @@ export default function Sidebar({ type }: SidebarProps) {
     { label: "Location", href: "/user/location", icon: MapPin },
     { label: "Appointment", href: "/user/appointment", icon: Calendar },
     { label: "Inquiry", href: "/user/inquiry", icon: MessageSquare },
+    { label: "Advertisement", href: "/user/advertisement", icon: Megaphone },
     { label: "Photo Gallery", href: "/user/photos", icon: ImageIcon },
     { label: "Video Gallery", href: "/user/videos", icon: Video },
     { label: "Brochure", href: "/user/brochure", icon: FileText },
