@@ -25,6 +25,7 @@ type View =
   | 'brochure'
   | 'inquiry'
   | 'dropbox'
+  | 'advertisement'
   | 'popup';
 
 interface ViewProps {
@@ -166,11 +167,16 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
             type="button"
             disabled={isCheckingStatus}
             onClick={async () => {
-              if (startFromHome) return; // Only allow switching from OFF to ON
+              // If already ON, allow turning OFF manually
+              if (startFromHome) {
+                setStartFromHome(false);
+                return;
+              }
 
               try {
                 setIsCheckingStatus(true);
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/status/${builderData?.userId}`);
+                // Use builderData?._id which is the User ID in our merged data
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/status/${builderData?._id}`);
                 const result = await response.json();
 
                 if (result.status === "Success" && result.data.isActive) {
@@ -191,18 +197,20 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
             className="relative w-36 h-11 flex items-center group disabled:opacity-70"
           >
             <div
-              className={`absolute inset-0 rounded-full transition-colors duration-300 border-[3.5px] border-white shadow-lg ${startFromHome ? 'bg-[#32CD32]' : 'bg-red-600'
+              className={`absolute inset-0 rounded-full transition-colors duration-300 border-[3.5px] border-white shadow-xl ${startFromHome ? 'bg-[#32CD32]' : 'bg-red-600'
                 }`}
             />
+            {/* The Knob */}
             <div
               className={`absolute w-[60px] h-8 bg-white rounded-full shadow-md border border-gray-100 transition-transform duration-300 z-10 flex items-center justify-center ${startFromHome ? 'translate-x-[68px]' : 'translate-x-1.5'
                 }`}
             >
                {isCheckingStatus && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" />}
             </div>
+            {/* Labels - positioned to be visible when knob is at the opposite side */}
             <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
+              <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100' : 'opacity-0'}`}>ON</span>
               <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'opacity-0' : 'text-white opacity-100'}`}>OFF</span>
-              <span className={`text-xs font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100' : 'opacity-0'}`}>ON</span>
             </div>
           </button>
         </div>
@@ -260,7 +268,10 @@ export const DashboardView = ({ setView }: ViewProps) => {
           </div>
         </div>
 
-        <div className="w-full bg-[#002D35] rounded-[32px] p-8 flex flex-col items-center justify-center text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] shadow-xl min-h-[160px] mt-2">
+        <div 
+          onClick={() => setView('advertisement')}
+          className="w-full bg-[#002D35] rounded-[32px] p-8 flex flex-col items-center justify-center text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] shadow-xl min-h-[160px] mt-2 cursor-pointer hover:shadow-2xl transition-all"
+        >
           <div className="relative z-10 flex flex-col items-center w-full h-full">
             {logoUrl ? (
               <div className="relative w-40 h-24">
