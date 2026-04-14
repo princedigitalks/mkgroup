@@ -170,29 +170,27 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
           <span className="text-xs font-black text-gray-700">Share</span>
         </div>
 
-        <div className='flex items-center mx-4 mb-5'>
-          <button
-            type="button"
-            disabled={isCheckingStatus}
+        <div className='flex flex-col items-center mx-4 mb-5 gap-1.5'>
+          <label
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              cursor: isCheckingStatus ? 'not-allowed' : 'pointer',
+              opacity: isCheckingStatus ? 0.7 : 1,
+            }}
             onClick={async () => {
-              // If already ON, allow turning OFF manually
+              if (isCheckingStatus) return;
               if (startFromHome) {
                 setStartFromHome(false);
                 return;
               }
-
               try {
                 setIsCheckingStatus(true);
-                // Use builderData?._id which is the User ID in our merged data
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/status/${builderData?._id}`);
                 const result = await response.json();
-
                 if (result.status === "Success" && result.data.isActive) {
                   setStartFromHome(true);
-                  // Delay the navigation
-                  setTimeout(() => {
-                    setView('popup');
-                  }, 500);
+                  setTimeout(() => { setView('popup'); }, 500);
                 } else {
                   toast.error("This profile is currently inactive. Please contact admin.");
                 }
@@ -202,50 +200,36 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
                 setIsCheckingStatus(false);
               }
             }}
-            className="relative w-36 h-11 flex items-center group disabled:opacity-70"
           >
-            <div
-              className={`absolute inset-0 rounded-full transition-colors duration-300 border-[3.5px] border-white shadow-xl ${startFromHome ? 'bg-[#32CD32]' : 'bg-red-600'
-                }`}
-            />
-            {/* The Knob */}
-<div
-  className={`absolute top-[3px] left-[2px] w-[70px] h-[38px] rounded-full transition-all duration-300 z-10 ${
-    startFromHome ? "translate-x-[68px]" : ""
-  }`}
->
-  {/* Outer Base */}
- <div
-  className="w-full h-full rounded-full flex items-center justify-start
-  bg-gradient-to-b from-gray-200 to-gray-300
-  shadow-md
-  [box-shadow:inset_0_-4px_6px_rgba(0,0,0,0.15),inset_0_2px_3px_rgba(255,255,255,0.6)]
-  "
->
-    
-    {/* Inner Soft Circle */}
-<div className="w-[28px] h-[26px] rounded-full 
-            bg-gradient-to-b from-gray-200 via-gray-300 to-gray-400 
-            shadow-sm border border-gray-200 
-            ml-2"></div>
-    
-    {/* Soft Highlight */}
-    <div className="absolute top-[5px] left-[7px] w-[18px] h-[8px] bg-white/50 rounded-full blur-sm" />
-  </div>
-
-  {/* Loader */}
-  {isCheckingStatus && (
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  )}
-</div>
-            {/* Labels - positioned to be visible when knob is at the opposite side */}
-            <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
-              <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100' : 'opacity-0'}`}>ON</span>
-              <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'opacity-0' : 'text-white opacity-100'}`}>OFF</span>
+            <div style={{
+              isolation: 'isolate',
+              position: 'relative',
+              height: '42px',
+              width: '84px',
+              borderRadius: '21px',
+              overflow: 'hidden',
+              boxShadow: '-8px -4px 8px 0px #ffffff, 8px 4px 12px 0px #d1d9e6, 4px 4px 4px 0px #d1d9e6 inset, -4px -4px 4px 0px #ffffff inset',
+            }}>
+              <div style={{
+                height: '100%',
+                width: '200%',
+                background: startFromHome ? '#32CD32' : '#ecf0f3',
+                borderRadius: '21px',
+                transform: startFromHome ? 'translate3d(25%, 0, 0)' : 'translate3d(-75%, 0, 0)',
+                transition: 'transform 0.4s cubic-bezier(0.85, 0.05, 0.18, 1.35), background 0.3s',
+                boxShadow: '-8px -4px 8px 0px #ffffff, 8px 4px 12px 0px #d1d9e6',
+              }} />
+              {isCheckingStatus && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
             </div>
-          </button>
+          </label>
+          <div className="flex w-[84px] justify-between px-1">
+            <span className={`text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${startFromHome ? 'text-green-600' : 'text-gray-300'}`}>ON</span>
+            <span className={`text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${!startFromHome ? 'text-red-500' : 'text-gray-300'}`}>OFF</span>
+          </div>
         </div>
 
         <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
