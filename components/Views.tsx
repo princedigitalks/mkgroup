@@ -432,7 +432,7 @@ export const DashboardView = ({ setView }: ViewProps) => {
           className="flex-1 flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
         >
           <Image
-            src="/select1.png"
+            src="/selete2.png"
             alt="Select language"
             width={180}
             height={50}
@@ -456,7 +456,7 @@ export const DashboardView = ({ setView }: ViewProps) => {
           className="flex-1 flex items-center justify-center cursor-pointer transition-transform hover:scale-105">
 
           <Image
-            src="/selete2.png"
+            src="/select1.png"
             alt="Save Contact"
             width={180}
             height={50}
