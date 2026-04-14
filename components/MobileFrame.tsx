@@ -71,7 +71,7 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome }
           )}
 
           {/* Scrollable Content */}
-          <div className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col ${isHome ? 'justify-center py-4' : 'pt-6 px-2 pb-32'}`}>
+          <div className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col ${isHome ? 'justify-center py-4' : ''}`}>
             {children}
           </div>
 
@@ -108,9 +108,9 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome }
               </button>
               <button
                 onClick={() => {}}
-                className="bg-white/10 px-8 py-1  border-2 border-white/30 shadow-lg backdrop-blur-sm active:scale-95 transition-all"
+                className="bg-white/10 px-6 rounded-lg py-1 border-2 border-white/30 shadow-lg backdrop-blur-sm active:scale-95 transition-all"
               >
-                <span className="text-white text-xs font-black uppercase tracking-[0.2em] drop-shadow-sm">
+                <span className="text-white text-xs font-black  tracking-[0.2em] drop-shadow-sm">
                   {VIEW_LABELS[currentView] ? VIEW_LABELS[currentView].toUpperCase() : currentView.toUpperCase()}
                 </span>
               </button>

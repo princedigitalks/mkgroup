@@ -84,17 +84,25 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
 
   return (
     <div className="flex flex-col items-center px-6 sm:px-12 space-y-6 w-full h-full justify-center mt-4">
-      <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full shadow-lg mb-2 overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10" />
-        <Image
-          src={getProfileImage()}
-          alt={name}
-          fill
-          className="object-cover"
-          priority
-          unoptimized
-        />
-      </div>
+  <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
+  
+  <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
+    
+    {/* Overlay */}
+    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 rounded-full" />
+    
+    {/* Image */}
+    <Image
+      src={getProfileImage()}
+      alt={name}
+      fill
+      className="object-cover rounded-full"
+      priority
+      unoptimized
+    />
+    
+  </div>
+</div>
 
       <div className="w-full space-y-2.5">
         <ContactItem icon={User} text={name} isName />
@@ -201,12 +209,37 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
                 }`}
             />
             {/* The Knob */}
-            <div
-              className={`absolute w-[60px] h-8 bg-white rounded-full shadow-md border border-gray-100 transition-transform duration-300 z-10 flex items-center justify-center ${startFromHome ? 'translate-x-[68px]' : 'translate-x-1.5'
-                }`}
-            >
-               {isCheckingStatus && <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" />}
-            </div>
+<div
+  className={`absolute top-[3px] left-[2px] w-[70px] h-[38px] rounded-full transition-all duration-300 z-10 ${
+    startFromHome ? "translate-x-[68px]" : ""
+  }`}
+>
+  {/* Outer Base */}
+ <div
+  className="w-full h-full rounded-full flex items-center justify-start
+  bg-gradient-to-b from-gray-200 to-gray-300
+  shadow-md
+  [box-shadow:inset_0_-4px_6px_rgba(0,0,0,0.15),inset_0_2px_3px_rgba(255,255,255,0.6)]
+  "
+>
+    
+    {/* Inner Soft Circle */}
+<div className="w-[28px] h-[26px] rounded-full 
+            bg-gradient-to-b from-gray-200 via-gray-300 to-gray-400 
+            shadow-sm border border-gray-200 
+            ml-2"></div>
+    
+    {/* Soft Highlight */}
+    <div className="absolute top-[5px] left-[7px] w-[18px] h-[8px] bg-white/50 rounded-full blur-sm" />
+  </div>
+
+  {/* Loader */}
+  {isCheckingStatus && (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )}
+</div>
             {/* Labels - positioned to be visible when knob is at the opposite side */}
             <div className="absolute inset-0 flex items-center justify-between px-6 z-0">
               <span className={`text-[11px] font-black transition-opacity duration-300 ${startFromHome ? 'text-white opacity-100' : 'opacity-0'}`}>ON</span>
@@ -249,8 +282,8 @@ export const DashboardView = ({ setView }: ViewProps) => {
 
   return (
     <div className="flex flex-col items-center px-4 space-y-4 pt-4">
-      <div className="relative flex flex-col items-center w-full">
-        <div className="absolute -top-2 z-20 flex items-center bg-[#E5ECEA] rounded-full border border-gray-300 shadow-sm pl-2 pr-1 py-1">
+      <div className="relative flex flex-col items-center w-full mt-12">
+        <div className="absolute -top-2 z-20 flex items-center bg-[#E5ECEA] rounded-full border border-gray-300 shadow-sm pl-2  pr-1 py-1">
           <div className="mr-2">
             <Image
               src="/icons/eyes.png"
