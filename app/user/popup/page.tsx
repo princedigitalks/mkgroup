@@ -14,6 +14,7 @@ interface Popup {
   content?: string;
   image?: string;
   isActive: boolean;
+  createdAt: string;
 }
 
 export default function PopupManagementPage() {

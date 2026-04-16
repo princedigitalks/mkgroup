@@ -266,7 +266,7 @@ export default function AdvertisementPage() {
                       {ad.type !== "Completed" && (
                           <button
                           title={`Move to ${ad.type === "Upcoming" ? "Running" : "Completed"}`}
-                          onClick={() => handleUpdateStatus(ad.id || ad._id, ad.type === "Upcoming" ? "Running" : "Completed")}
+                          onClick={() => handleUpdateStatus(ad._id, ad.type === "Upcoming" ? "Running" : "Completed")}
                           className="h-8 w-8 bg-white text-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg"
                           >
                           <ArrowRight size={16} />

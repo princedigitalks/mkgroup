@@ -129,7 +129,7 @@ export default function UserLoginPage() {
                 </div>
                 <span className="text-xs font-bold text-gray-500 group-hover:text-gray-900 transition-colors">Keep me signed in</span>
               </label>
-              <a href="#" className="text-xs font-black text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest">Forgot?</a>
+            
             </div>
 
             <button 
