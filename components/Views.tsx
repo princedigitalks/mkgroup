@@ -61,17 +61,17 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
   const [startX, setStartX] = React.useState(0);
   const [currentX, setCurrentX] = React.useState(0);
 
-  const switchWidth = 120;
-  const knobWidth = 64;
+  const switchWidth = 100;
+  const knobWidth = 46;
   const padding = 2;
   const maxDrag = switchWidth - knobWidth - padding * 2;
 
   const getPos = () => {
     if (isDragging) {
-      let pos = (checked ? maxDrag : 0) + currentX - startX;
+      let pos = (checked ? 0 : maxDrag) + currentX - startX;
       return Math.max(0, Math.min(maxDrag, pos));
     }
-    return checked ? maxDrag : 0;
+    return checked ? 0 : maxDrag;
   };
 
   const handleStart = (clientX: number) => {
@@ -90,9 +90,9 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
     if (!isDragging) return;
     setIsDragging(false);
     const pos = getPos();
-    if (checked && pos < maxDrag / 2) {
+    if (checked && pos > maxDrag / 2) {
       onChange(false);
-    } else if (!checked && pos > maxDrag / 2) {
+    } else if (!checked && pos < maxDrag / 2) {
       onChange(true);
     } else {
       if (Math.abs(currentX - startX) < 5) {
@@ -119,7 +119,7 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
     <div
       style={{
         width: switchWidth,
-        height: '54px',
+        height: '42px',
         borderRadius: '37px',
         background: 'linear-gradient(180deg, #d3d3d3 0%, #ffffff 100%)',
         padding: `${padding}px`,
@@ -146,9 +146,9 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
         overflow: 'hidden'
       }}>
         <div style={{
-          position: 'absolute', right: '12px', top: 0, bottom: 0, 
+          position: 'absolute', right: '16px', top: 0, bottom: 0, 
           display: 'flex', alignItems: 'center', color: '#fff', 
-          fontWeight: '500', fontSize: '16px', letterSpacing: '0.5px',
+          fontWeight: '500', fontSize: '14px', letterSpacing: '0.5px',
           fontFamily: 'sans-serif',
           opacity: checked ? 1 : 0, transition: 'opacity 0.2s',
           pointerEvents: 'none'
@@ -157,7 +157,7 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
         <div style={{
           position: 'absolute', left: '16px', top: 0, bottom: 0, 
           display: 'flex', alignItems: 'center', color: '#fff', 
-          fontWeight: '500', fontSize: '16px', letterSpacing: '0.5px',
+          fontWeight: '500', fontSize: '14px', letterSpacing: '0.5px',
           fontFamily: 'sans-serif',
           opacity: checked ? 0 : 1, transition: 'opacity 0.2s',
           pointerEvents: 'none'
@@ -280,33 +280,31 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
         <ContactItem icon={Send} text={website} />
       </div>
 
+      <div className="w-full text-center mt-2 px-4">
+        <h1 className="text-[18px] sm:text-[22px] font-black tracking-[0.1em] leading-tight uppercase text-gray-900 break-words">
+          {companyName}
+        </h1>
+      </div>
+
       <div
-        className="w-full bg-[#003B46] rounded-2xl p-5 flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all shadow-xl border-2 border-white/30 h-28 mt-2"
+        className="w-full bg-[#003B46] rounded-2xl p-4 flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all shadow-xl border-2 border-white/30 h-28 mt-1"
       >
         {logoUrl ? (
-          <div className="flex flex-col items-center gap-2 w-full h-full">
-            <div className="text-xl font-black tracking-[0.2em] leading-tight uppercase truncate max-w-full">
-              {companyName}
-            </div>
-            <div className="relative w-20 h-10">
-              <Image
-                src={logoUrl}
-                alt="Logo"
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
+          <div className="relative w-full h-full">
+            <Image
+              src={logoUrl}
+              alt="Logo"
+              fill
+              className="object-contain drop-shadow-md"
+              unoptimized
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <div className="text-2xl font-black tracking-[0.2em] leading-tight uppercase mb-1">
-              {companyName}
-            </div>
             <div className="flex items-center gap-2">
-              <div className="w-[4px] h-5 bg-white rounded-full" />
-              <div className="relative w-4.5 h-4.5 bg-white rounded-sm flex items-center justify-center">
-                <div className="text-[#003B46] font-black text-[9px]">H</div>
+              <div className="w-[4px] h-6 bg-white rounded-full opacity-50" />
+              <div className="text-xl font-black tracking-[0.2em] leading-tight uppercase text-white/50">
+                LOGO
               </div>
             </div>
           </div>
@@ -387,25 +385,25 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[300px] overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Top accent */}
             <div className="h-1.5 w-full bg-gradient-to-r from-red-400 to-red-600" />
-            <div className="p-6 flex flex-col items-center text-center gap-4">
+            <button 
+              onClick={() => setShowInactiveDialog(false)} 
+              className="absolute top-4 right-4 p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all z-10"
+            >
+              <X size={18} strokeWidth={2.5} />
+            </button>
+            <div className="p-6 flex flex-col items-center text-center gap-4 pt-10">
               {/* Icon */}
-              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-1">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="2"/>
                   <path d="M12 7v5" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round"/>
                   <circle cx="12" cy="16" r="1.2" fill="#ef4444"/>
                 </svg>
               </div>
-              <div>
+              <div className="mb-2">
                 <p className="text-sm font-black text-gray-900 mb-1">Profile Inactive</p>
-                <p className="text-xs font-medium text-gray-500 leading-relaxed">{dialogMessage}</p>
+                <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[200px] mx-auto">{dialogMessage}</p>
               </div>
-              <button
-                onClick={() => setShowInactiveDialog(false)}
-                className="w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-colors"
-              >
-                OK
-              </button>
             </div>
           </div>
         </div>
@@ -451,18 +449,17 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
 
         <div 
           onClick={() => setView('advertisement')}
-          className="w-full bg-[#002D35] rounded-[32px] p-4 flex flex-col items-center justify-center text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] min-h-[160px] mt-2 cursor-pointer transition-all"
+          className={`w-full bg-[#002D35] rounded-[32px] text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] min-h-[160px] mt-2 cursor-pointer transition-all ${logoUrl ? 'p-0' : 'p-4 flex flex-col items-center justify-center'}`}
           style={{
-            boxShadow: '0 10px 0px #001a1f, 0 14px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: '0 4px 0px #001a1f, 0 6px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
             transform: 'perspective(600px) rotateX(2deg)',
             transformOrigin: 'top center',
           }}
           onMouseEnter={e => (e.currentTarget.style.transform = 'perspective(600px) rotateX(0deg)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'perspective(600px) rotateX(2deg)')}
         >
-          <div className="relative z-10 flex flex-col items-center w-full h-full">
             {logoUrl ? (
-              <div className="relative w-40 h-24">
+              <div className="relative w-full h-full min-h-[160px]">
                 <Image
                   src={logoUrl}
                   alt="Logo"
@@ -483,7 +480,6 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
                 <div className="text-sm tracking-[0.6em] font-bold text-[#FFD700] mt-1">HEIGHTS</div>
               </>
             )}
-          </div>
         </div>
       </div>
 
@@ -534,13 +530,13 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
             }
           },
         ].map((item, i) => (
-          <div key={i} onClick={item.action} className="flex justify-center cursor-pointer hover:scale-105 transition-transform">
+          <div key={i} onClick={item.action} className="flex justify-center cursor-pointer hover:translate-y-0.5 hover:drop-shadow-none transition-all">
             <Image
               src={item.img}
               alt="icon"
               width={55}
               height={55}
-              className="object-contain"
+              className="object-contain drop-shadow-[0_5px_4px_rgba(0,0,0,0.35)]"
             />
           </div>
         ))}
@@ -556,8 +552,8 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
           { id: 'inquiry', label: 'Inquiry', img: '/icons/IconInquiry.png' },
           { id: 'brochure', label: 'Brochure', img: '/icons/brochure-01.png' },
         ].map((item) => (
-          <button key={item.id} onClick={() => setView(item.id as View)} className="flex flex-col items-center group">
-            <div className="rounded-xl shadow-[0_2px_5px_rgba(0,0,0,0.1)] ">
+          <button key={item.id} onClick={() => setView(item.id as View)} className="flex flex-col items-center group cursor-pointer hover:translate-y-0.5 transition-all">
+            <div className="drop-shadow-[0_5px_4px_rgba(0,0,0,0.35)] group-hover:drop-shadow-none transition-all">
               <Image
                 src={item.img}
                 alt={item.label}
@@ -571,9 +567,9 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
         ))}
       </div>
 
-      <div className="flex space-x-2 w-full px-2">
+      <div className="flex space-x-2 w-full px-2 mt-2">
         <button
-          className="flex-1 flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
+          className="flex-1 flex items-center justify-center cursor-pointer hover:translate-y-0.5 transition-all drop-shadow-[0_5px_4px_rgba(0,0,0,0.35)] hover:drop-shadow-none"
         >
           <Image
             src="/selete2.png"
@@ -609,7 +605,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
         </button> */}
 
         {/* Select Language - Now on Right, using Native Select Overlay */}
-        <div className="flex-1 relative group">
+        <div className="flex-1 relative group hover:translate-y-0.5 transition-all drop-shadow-[0_5px_4px_rgba(0,0,0,0.35)] hover:drop-shadow-none">
           <select 
             onChange={(e) => changeLanguage && changeLanguage(e.target.value)}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 appearance-none"
@@ -620,7 +616,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
             <option value="hi">Hindi</option>
             <option value="gu">Gujarati</option>
           </select>
-          <div className="flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
+          <div className="flex items-center justify-center transition-transform">
             <Image
               src="/select1.png"
               alt="Select language"
@@ -640,8 +636,8 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
           { label: 'Feedback', img: '/icons/t4.png' },
           { label: 'Like', img: '/icons/t5.png' },
         ].map((item, i) => (
-          <button key={i} onClick={item.action} className="flex flex-col items-center space-y-1.5">
-            <div>
+          <button key={i} onClick={item.action} className="flex flex-col items-center space-y-1.5 group cursor-pointer hover:translate-y-0.5 transition-all">
+            <div className="drop-shadow-[0_5px_4px_rgba(0,0,0,0.35)] group-hover:drop-shadow-none transition-all">
               <Image
                 src={item.img}
                 alt={item.label}
@@ -692,12 +688,8 @@ export const AboutUsView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-6 space-y-4 text-gray-800 pb-10 pt-4">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">About Us</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">About Us</span>
       </div>
 
       {loading ? (
@@ -774,12 +766,8 @@ export const AppointmentView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-6 space-y-4 pb-10 pt-4">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Appointment</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Appointment</span>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3.5 mt-4">
         <div className="space-y-1">
@@ -893,15 +881,11 @@ export const PhotoGalleryView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-4 space-y-4 pt-4 pb-10">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Photos</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Photos</span>
       </div>
 
-      <div className="relative px-8">
+      <div className="relative">
         {currentPhoto?.title && (
           <div className="mb-3 flex justify-start">
             <span className="bg-white px-5 py-2 rounded-xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50">
@@ -1016,12 +1000,8 @@ export const ContactPersonView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-6 space-y-4 pb-10 pt-4">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20 mb-4">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Contact Person</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Contact Person</span>
       </div>
 
       {loading ? (
@@ -1040,7 +1020,7 @@ export const ContactPersonView = ({ setView }: ViewProps) => {
                 unoptimized
               />
             </div>
-            <div className="flex flex-col justify-center space-y-1">
+            <div className="flex flex-col justify-start pt-1 space-y-1">
               <h3 className="font-black text-[#333333] text-lg leading-tight tracking-tight">{person.name}</h3>
               <p className="text-xs font-bold text-gray-600">{person.designation}</p>
               <p className="text-xs font-bold text-gray-600">{person.role}</p>
@@ -1079,12 +1059,8 @@ export const LocationView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-4 space-y-6 pt-4 pb-10">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Select for location</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Select for location</span>
       </div>
 
       {loading ? (
@@ -1185,16 +1161,12 @@ export const VideoGalleryView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-4 space-y-4 pt-4 pb-10">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Videos</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Videos</span>
       </div>
 
-      <div className="relative px-6">
-        <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[9/16] bg-black border-[6px] border-[#003B46]/10">
+      <div className="relative">
+        <div className="relative rounded-[2 rem] overflow-hidden shadow-2xl aspect-[9/16] bg-black border-[6px] border-[#003B46]/10">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
@@ -1276,12 +1248,8 @@ export const BrochureView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-6 space-y-6 pt-4 pb-10">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Brochures</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Brochures</span>
       </div>
 
       {loading ? (
@@ -1378,12 +1346,8 @@ export const InquiryView = ({ setView }: ViewProps) => {
 
   return (
     <div className="px-6 space-y-4 pt-4 pb-10">
-      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-          <ChevronLeft size={24} />
-        </button>
-        <span className="flex-1 text-center text-white font-black text-sm">Inquiry</span>
-        <div className="w-6" />
+      <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
+        <span className="text-white font-black text-sm">Inquiry</span>
       </div>
 
       {submitted ? (
@@ -1529,16 +1493,16 @@ export const PopupView = ({ setView }: ViewProps) => {
 
   return (
     <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-      <div className="bg-white rounded-[40px] w-full max-w-[340px] relative shadow-2xl overflow-hidden border-4 border-white animate-in zoom-in-95 duration-300">
+      <div className="bg-white rounded-[40px] w-full max-w-[340px] relative shadow-2xl overflow-hidden border-4 border-white animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh]">
         <button 
           onClick={(e) => { e.stopPropagation(); setView('dashboard'); }}
-          className="absolute top-4 right-4 p-2 bg-black/10 backdrop-blur-md rounded-full text-white hover:bg-black/20 transition-all z-50"
+          className="absolute top-4 right-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-all z-50 shadow-md"
         >
           <X size={18} strokeWidth={3} />
         </button>
 
-        {popup.type === 'image' ? (
-          <div className="relative aspect-[4/5] w-full h-[400px]">
+        {popup.image && (
+          <div className={`relative w-full shrink-0 ${popup.content ? 'h-[220px]' : 'h-[350px]'}`}>
             <Image
               src={getImageUrl(popup.image)}
               alt="Promotion"
@@ -1547,22 +1511,29 @@ export const PopupView = ({ setView }: ViewProps) => {
               unoptimized
             />
           </div>
-        ) : (
-          <div className="p-10 space-y-6 flex flex-col items-center text-center">
-             <div className="h-16 w-16 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 mb-2">
-                <Bell size={32} />
-             </div>
-             <p className="text-lg font-black text-gray-800 leading-tight">
+        )}
+        
+        {popup.content && (
+          <div className={`px-6 pt-8 pb-4 flex flex-col items-center text-center overflow-y-auto`}>
+             {!popup.image && (
+               <div className="h-16 w-16 bg-blue-50 shrink-0 rounded-3xl flex items-center justify-center text-blue-600 mb-4">
+                  <Bell size={32} />
+               </div>
+             )}
+             <p className="text-[14px] font-black text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full text-center">
                {popup.content}
              </p>
-             <button 
-              onClick={() => setView('dashboard')}
-              className="mt-4 bg-[#003B46] text-white w-full py-4 rounded-2xl font-black shadow-lg hover:scale-[1.02] transition-all text-[11px] tracking-widest uppercase"
-            >
-              Close
-            </button>
           </div>
         )}
+
+        <div className="p-5 pt-2 mt-auto w-full">
+           <button 
+            onClick={() => setView('dashboard')}
+            className="w-full bg-[#003B46] text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-opacity-90 transition-all text-xs tracking-widest uppercase"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1580,9 +1551,10 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
 
   React.useEffect(() => {
     const fetchAds = async () => {
-      if (!builderData?._id) return;
+      const userId = builderData?.userId || builderData?._id;
+      if (!userId) return;
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/advertisement/user/${builderData._id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/advertisement/user/${userId}`);
         const result = await response.json();
         if (result.status === "Success") {
           setAds(result.data);
@@ -1594,7 +1566,7 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
       }
     };
     fetchAds();
-  }, [builderData?._id]);
+  }, [builderData?.userId, builderData?._id]);
 
   const getImageUrl = (imageName: string) => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
@@ -1615,12 +1587,14 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
           <div className="w-6" />
         </div>
 
-        <div className="relative px-8">
+        <div className="relative ">
           {currentAd?.note && (
             <div className="mb-3 flex justify-start">
-              <span className="bg-white px-5 py-2 rounded-xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50">
-                {currentAd.note}
-              </span>
+              <div className="w-full">
+                <span className="inline-block bg-white px-5 py-2.5 rounded-2xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50 break-words max-w-full">
+                  {currentAd.note}
+                </span>
+              </div>
             </div>
           )}
           <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] bg-gray-100 border border-gray-200">
@@ -1656,13 +1630,6 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
               </div>
             )}
           </div>
-
-          {/* Note below image */}
-          {currentAd?.note && (
-            <div className="mt-2 px-1">
-              <p className="text-xs font-bold text-gray-700 leading-snug">{currentAd.note}</p>
-            </div>
-          )}
 
           {filteredAds.length > 1 && (
             <>
