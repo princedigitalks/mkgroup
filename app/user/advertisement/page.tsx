@@ -249,53 +249,55 @@ export default function AdvertisementPage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredAds.map((ad) => (
-              <div key={ad._id} className="relative aspect-square group rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-white">
-                <img src={getImageUrl(ad.image)} alt="" className="h-full w-full object-cover" />
+              <div key={ad._id} className="relative group rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-white flex flex-col">
+                <div className="relative aspect-square">
+                  <img src={getImageUrl(ad.image)} alt="" className="h-full w-full object-cover" />
 
-                {/* Status Badge */}
-                <div className="absolute top-2 left-2 z-10">
-                   <div className={`px-2 py-1 rounded-md text-[8px] font-black uppercase text-white shadow-sm flex items-center gap-1 ${getStatusColor(ad.type)}`}>
-                      {getStatusIcon(ad.type)} {ad.type}
-                   </div>
+                  {/* Status Badge */}
+                  <div className="absolute top-2 left-2 z-10">
+                     <div className={`px-2 py-1 rounded-md text-[8px] font-black uppercase text-white shadow-sm flex items-center gap-1 ${getStatusColor(ad.type)}`}>
+                        {getStatusIcon(ad.type)} {ad.type}
+                     </div>
+                  </div>
+
+                  {/* Overlay Controls */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none">
+                    <div className="flex gap-2">
+                      {ad.type !== "Completed" && (
+                          <button
+                          title={`Move to ${ad.type === "Upcoming" ? "Running" : "Completed"}`}
+                          onClick={() => handleUpdateStatus(ad.id || ad._id, ad.type === "Upcoming" ? "Running" : "Completed")}
+                          className="h-8 w-8 bg-white text-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg"
+                          >
+                          <ArrowRight size={16} />
+                          </button>
+                      )}
+                      
+                      <button
+                        onClick={() => setDeleteId(ad._id)}
+                        className="h-8 w-8 bg-red-500 text-white rounded-lg flex items-center justify-center hover:bg-red-600 transition-all shadow-lg"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    
+                    {deleteId === ad._id && (
+                      <div className="absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-2 text-center animate-in fade-in zoom-in duration-200">
+                          <p className="text-[10px] font-black text-gray-900 mb-2 uppercase">Delete this ad?</p>
+                          <div className="flex gap-2">
+                              <button onClick={() => handleDelete(ad._id)} className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold rounded-md flex items-center gap-1"><Check size={12} /> YES</button>
+                              <button onClick={() => setDeleteId(null)} className="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded-md flex items-center gap-1"><X size={12} /> NO</button>
+                          </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Note Hover Overlay */}
-                {ad.note && (
-                   <div className="absolute bottom-0 inset-x-0 bg-black/60 p-2 transform translate-y-full group-hover:translate-y-0 transition-transform">
-                      <p className="text-[10px] text-white font-bold truncate">{ad.note}</p>
-                   </div>
-                )}
-
-                {/* Overlay Controls */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none">
-                  <div className="flex gap-2">
-                    {ad.type !== "Completed" && (
-                        <button
-                        title={`Move to ${ad.type === "Upcoming" ? "Running" : "Completed"}`}
-                        onClick={() => handleUpdateStatus(ad.id || ad._id, ad.type === "Upcoming" ? "Running" : "Completed")}
-                        className="h-8 w-8 bg-white text-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg"
-                        >
-                        <ArrowRight size={16} />
-                        </button>
-                    )}
-                    
-                    <button
-                      onClick={() => setDeleteId(ad._id)}
-                      className="h-8 w-8 bg-red-500 text-white rounded-lg flex items-center justify-center hover:bg-red-600 transition-all shadow-lg"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                  
-                  {deleteId === ad._id && (
-                    <div className="absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-2 text-center animate-in fade-in zoom-in duration-200">
-                        <p className="text-[10px] font-black text-gray-900 mb-2 uppercase">Delete this ad?</p>
-                        <div className="flex gap-2">
-                            <button onClick={() => handleDelete(ad._id)} className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold rounded-md flex items-center gap-1"><Check size={12} /> YES</button>
-                            <button onClick={() => setDeleteId(null)} className="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded-md flex items-center gap-1"><X size={12} /> NO</button>
-                        </div>
-                    </div>
-                  )}
+                {/* Note — always visible below image */}
+                <div className="px-2 py-1.5 min-h-[28px]">
+                  <p className="text-[10px] font-bold text-gray-700 leading-snug line-clamp-2">
+                    {ad.note || <span className="text-gray-300 italic">No note</span>}
+                  </p>
                 </div>
               </div>
             ))}

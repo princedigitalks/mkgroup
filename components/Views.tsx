@@ -56,6 +56,153 @@ const ContactItem = ({ icon: Icon, text, isName = false, isAddress = false }: { 
     </div>
   </div>
 );
+const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checked: boolean, onChange: (val: boolean) => void, disabled?: boolean, isLoading?: boolean }) => {
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [startX, setStartX] = React.useState(0);
+  const [currentX, setCurrentX] = React.useState(0);
+
+  const switchWidth = 120;
+  const knobWidth = 64;
+  const padding = 2;
+  const maxDrag = switchWidth - knobWidth - padding * 2;
+
+  const getPos = () => {
+    if (isDragging) {
+      let pos = (checked ? maxDrag : 0) + currentX - startX;
+      return Math.max(0, Math.min(maxDrag, pos));
+    }
+    return checked ? maxDrag : 0;
+  };
+
+  const handleStart = (clientX: number) => {
+    if (disabled || isLoading) return;
+    setIsDragging(true);
+    setStartX(clientX);
+    setCurrentX(clientX);
+  };
+
+  const handleMove = (clientX: number) => {
+    if (!isDragging) return;
+    setCurrentX(clientX);
+  };
+
+  const handleEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const pos = getPos();
+    if (checked && pos < maxDrag / 2) {
+      onChange(false);
+    } else if (!checked && pos > maxDrag / 2) {
+      onChange(true);
+    } else {
+      if (Math.abs(currentX - startX) < 5) {
+        onChange(!checked);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    const handleMouseUp = () => handleEnd();
+    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
+    
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, currentX, startX, checked]);
+
+  return (
+    <div
+      style={{
+        width: switchWidth,
+        height: '54px',
+        borderRadius: '37px',
+        background: 'linear-gradient(180deg, #d3d3d3 0%, #ffffff 100%)',
+        padding: `${padding}px`,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1), inset 0px 1px 1px rgba(255,255,255,1)',
+        position: 'relative',
+        cursor: disabled || isLoading ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.7 : 1,
+        touchAction: 'none'
+      }}
+      onClick={(e) => {
+        if (!isDragging && !disabled && !isLoading) {
+          onChange(!checked);
+        }
+      }}
+    >
+      <div style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: '27px',
+        background: checked ? '#3CAF4E' : '#ed1c24',
+        boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.4)',
+        transition: isDragging ? 'none' : 'background 0.3s',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute', right: '12px', top: 0, bottom: 0, 
+          display: 'flex', alignItems: 'center', color: '#fff', 
+          fontWeight: '500', fontSize: '16px', letterSpacing: '0.5px',
+          fontFamily: 'sans-serif',
+          opacity: checked ? 1 : 0, transition: 'opacity 0.2s',
+          pointerEvents: 'none'
+        }}>ON</div>
+        
+        <div style={{
+          position: 'absolute', left: '16px', top: 0, bottom: 0, 
+          display: 'flex', alignItems: 'center', color: '#fff', 
+          fontWeight: '500', fontSize: '16px', letterSpacing: '0.5px',
+          fontFamily: 'sans-serif',
+          opacity: checked ? 0 : 1, transition: 'opacity 0.2s',
+          pointerEvents: 'none'
+        }}>OFF</div>
+      </div>
+
+      <div 
+        style={{
+          position: 'absolute',
+          top: padding,
+          left: padding,
+          height: `calc(100% - ${padding*2}px)`,
+          width: knobWidth,
+          borderRadius: '27px',
+          background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.2), inset 0 1px 1px #fff, inset 0 -1px 1px #d0d0d0',
+          transform: `translateX(${getPos()}px)`,
+          transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2
+        }}
+        onMouseDown={(e) => { e.stopPropagation(); handleStart(e.clientX); }}
+        onTouchStart={(e) => { e.stopPropagation(); handleStart(e.touches[0].clientX); }}
+        onTouchMove={(e) => handleMove(e.touches[0].clientX)}
+        onTouchEnd={handleEnd}
+      >
+        <div style={{
+          width: '20px',
+          height: '20px',
+          borderRadius: '50%',
+          background: 'linear-gradient(180deg, #dadada 0%, #ffffff 100%)',
+          boxShadow: 'inset 0 2px 3px rgba(0,0,0,0.15)'
+        }} />
+      </div>
+
+      {isLoading && (
+        <div style={{ position: 'absolute', zIndex: 10, inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.1)', borderRadius: '21px' }}>
+          <div className="w-5 h-5 border-2 border-[#fff] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewProps) => {
   const builderData = useContext(BuilderContext);
@@ -65,12 +212,13 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
   const [dialogMessage, setDialogMessage] = React.useState('');
   const [statusError, setStatusError] = React.useState<string | null>(null);
 
-  const name = builderData?.name || "-";
-  const number = builderData?.number || "-";
-  const email = builderData?.email || "-";
-  const location = builderData?.location || "-";
-  const timing = builderData?.timing || "-";
-  const website = builderData?.website || "-";
+  const name = builderData?.name?.trim() ? builderData.name.trim() : "-";
+  const number = builderData?.number?.trim() ? builderData.number.trim() : "-";
+  const email = builderData?.email?.trim() ? builderData.email.trim() : "-";
+  const location = builderData?.location?.trim() ? builderData.location.trim() : "-";
+  const timing = builderData?.timing?.trim() ? builderData.timing.trim() : "-";
+  const website = builderData?.website?.trim() ? builderData.website.trim() : "-";
+  const companyName = builderData?.companyName?.trim() ? builderData.companyName.trim() : "-";
 
   const getProfileImage = () => {
     if (builderData?.profileImage) {
@@ -137,6 +285,9 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
       >
         {logoUrl ? (
           <div className="flex flex-col items-center gap-2 w-full h-full">
+            <div className="text-xl font-black tracking-[0.2em] leading-tight uppercase truncate max-w-full">
+              {companyName}
+            </div>
             <div className="relative w-20 h-10">
               <Image
                 src={logoUrl}
@@ -146,20 +297,17 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
                 unoptimized
               />
             </div>
-            <div className="text-xl font-black tracking-[0.2em] leading-tight uppercase truncate max-w-full">
-              {builderData?.companyName || "-"}
-            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="text-2xl font-black tracking-[0.2em] leading-tight uppercase mb-1">
+              {companyName}
+            </div>
+            <div className="flex items-center gap-2">
               <div className="w-[4px] h-5 bg-white rounded-full" />
               <div className="relative w-4.5 h-4.5 bg-white rounded-sm flex items-center justify-center">
                 <div className="text-[#003B46] font-black text-[9px]">H</div>
               </div>
-            </div>
-            <div className="text-2xl font-black tracking-[0.2em] leading-tight uppercase">
-              {builderData?.companyName || "-"}
             </div>
           </div>
         )}
@@ -181,16 +329,13 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
         </div>
 
         <div className='flex flex-col items-center mx-4 mb-5 gap-1.5'>
-          <label
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              cursor: isCheckingStatus ? 'not-allowed' : 'pointer',
-              opacity: isCheckingStatus ? 0.7 : 1,
-            }}
-            onClick={async () => {
+          <SkeuomorphicToggle 
+            checked={startFromHome}
+            disabled={isCheckingStatus}
+            isLoading={isCheckingStatus}
+            onChange={async (newCheckedState) => {
               if (isCheckingStatus) return;
-              if (startFromHome) {
+              if (!newCheckedState) {
                 setStartFromHome(false);
                 return;
               }
@@ -212,63 +357,7 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
                 setIsCheckingStatus(false);
               }
             }}
-          >
-            <div style={{
-              isolation: 'isolate',
-              position: 'relative',
-              height: '42px',
-              width: '110px',
-              borderRadius: '21px',
-              overflow: 'hidden',
-              boxShadow: '-1px -1px 4px #e2e8f0, 3px 3px 6px #cbd5e0, inset 1px 1px 3px #cbd5e0, inset -1px -1px 3px #ffffff'
-            }}>
-              {/* Sliding indicator */}
-              <div style={{
-                height: '100%',
-                width: '200%',
-                background: startFromHome ? '#32CD32' : '#e53e3e',
-                borderRadius: '21px',
-                transform: startFromHome ? 'translate3d(25%, 0, 0)' : 'translate3d(-75%, 0, 0)',
-                transition: 'transform 0.4s cubic-bezier(0.85, 0.05, 0.18, 1.35), background 0.3s',
-                boxShadow: '-4px -4px 8px 0px #a0aec0, 8px 8px 16px 0px #4a5568',
-              }} />
-              {/* OFF label - left side, visible when OFF */}
-              <span style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '11px',
-                fontWeight: 900,
-                color: '#fff',
-                letterSpacing: '0.05em',
-                opacity: startFromHome ? 0 : 1,
-                transition: 'opacity 0.3s',
-                pointerEvents: 'none',
-                userSelect: 'none',
-              }}>OFF</span>
-              {/* ON label - right side, visible when ON */}
-              <span style={{
-                position: 'absolute',
-                right: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '11px',
-                fontWeight: 900,
-                color: '#fff',
-                letterSpacing: '0.05em',
-                opacity: startFromHome ? 1 : 0,
-                transition: 'opacity 0.3s',
-                pointerEvents: 'none',
-                userSelect: 'none',
-              }}>ON</span>
-              {isCheckingStatus && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-          </label>
+          />
         </div>
 
         <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
@@ -1567,6 +1656,13 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
               </div>
             )}
           </div>
+
+          {/* Note below image */}
+          {currentAd?.note && (
+            <div className="mt-2 px-1">
+              <p className="text-xs font-bold text-gray-700 leading-snug">{currentAd.note}</p>
+            </div>
+          )}
 
           {filteredAds.length > 1 && (
             <>
