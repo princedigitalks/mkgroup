@@ -44,13 +44,13 @@ interface HomeViewProps extends ViewProps {
 }
 
 const ContactItem = ({ icon: Icon, text, isName = false, isAddress = false }: { icon: any, text: string | React.ReactNode, isName?: boolean, isAddress?: boolean }) => (
-  <div className="bg-white rounded-2xl flex items-stretch shadow-sm border border-gray-200 overflow-hidden h-10 w-full">
-    <div className="w-10 flex items-center justify-center text-gray-700 flex-shrink-0">
-      <Icon size={18} strokeWidth={2.5} className={Icon === Send ? 'rotate-0' : ''} />
+  <div className="bg-white rounded-2xl flex items-stretch shadow-sm border border-gray-200 overflow-hidden h-11 sm:h-12 w-full">
+    <div className="w-10 sm:w-12 flex items-center justify-center text-gray-700 flex-shrink-0">
+      <Icon size={isName ? 20 : 18} strokeWidth={2.5} className={Icon === Send ? 'rotate-0' : ''} />
     </div>
     <div className="w-[1.5px] bg-gray-200 my-1.5" />
     <div className={`flex-1 flex items-center px-4 ${isAddress ? 'py-1' : ''}`}>
-      <span className={`${isName ? 'font-black text-sm' : 'font-bold text-xs'} text-gray-800 tracking-tight leading-none`}>
+      <span className={`${isName ? 'font-black text-sm sm:text-base' : 'font-bold text-xs sm:text-sm'} text-gray-800 tracking-tight leading-none`}>
         {text}
       </span>
     </div>
@@ -241,8 +241,8 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
   const logoUrl = getLogoImage();
 
   return (
-    <div className="flex flex-col items-center px-6 sm:px-12 space-y-6 w-full h-full justify-center mt-4">
-  <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
+    <div className="flex flex-col items-center px-6 sm:px-8 space-y-6 w-full h-full justify-start pt-10 pb-20">
+  <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
   
   <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
     
@@ -265,13 +265,13 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
       <div className="w-full space-y-2.5">
         <ContactItem icon={User} text={name} isName />
         <ContactItem icon={Phone} text={number} />
-        <div className="bg-white rounded-2xl flex items-stretch shadow-sm border border-gray-200 overflow-hidden h-14 w-full">
-          <div className="w-10 flex items-center justify-center text-gray-700 flex-shrink-0">
+        <div className="bg-white rounded-2xl flex items-stretch shadow-sm border border-gray-200 overflow-hidden h-16 sm:h-20 w-full">
+          <div className="w-10 sm:w-12 flex items-center justify-center text-gray-700 flex-shrink-0">
             <MapPin size={18} strokeWidth={2.5} />
           </div>
           <div className="w-[1.5px] bg-gray-200 my-2" />
           <div className="flex-1 flex items-center px-4 py-1">
-            <span className="font-bold text-gray-800 text-[11px] leading-snug tracking-tight">
+            <span className="font-bold text-gray-800 text-[11px] sm:text-xs leading-snug tracking-tight">
               {location}
             </span>
           </div>
@@ -281,13 +281,13 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
       </div>
 
       <div className="w-full text-center mt-2 px-4">
-        <h1 className="text-[18px] sm:text-[22px] font-black tracking-[0.1em] leading-tight uppercase text-gray-900 break-words">
+        <h1 className="text-[20px] sm:text-[26px] font-black tracking-[0.1em] leading-tight uppercase text-gray-900 break-words">
           {companyName}
         </h1>
       </div>
 
       <div
-        className="w-full bg-[#003B46] rounded-2xl p-4 flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all shadow-xl border-2 border-white/30 h-28 mt-1"
+        className="w-full bg-[#003B46] rounded-2xl p-4 flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all shadow-xl border-2 border-white/30 h-32 sm:h-40 mt-1"
       >
         {logoUrl ? (
           <div className="relative w-full h-full">

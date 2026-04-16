@@ -108,7 +108,7 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome }
 
        
           {/* Scrollable Content */}
-          <div className={`flex-1 overflow-y-auto scrollbar-hide mt-6 flex flex-col ${isHome ? 'justify-center py-4' : ''}`}>
+          <div className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col ${isMobile ? 'max-w-md mx-auto w-full' : ''}`}>
             {children(isAdvertisement ? adTab : undefined)}
           </div>
 
