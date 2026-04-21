@@ -104,7 +104,7 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
   React.useEffect(() => {
     const handleMouseUp = () => handleEnd();
     const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
-    
+
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
@@ -146,17 +146,17 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
         overflow: 'hidden'
       }}>
         <div style={{
-          position: 'absolute', right: '16px', top: 0, bottom: 0, 
-          display: 'flex', alignItems: 'center', color: '#fff', 
+          position: 'absolute', right: '16px', top: 0, bottom: 0,
+          display: 'flex', alignItems: 'center', color: '#fff',
           fontWeight: '500', fontSize: '14px', letterSpacing: '0.5px',
           fontFamily: 'sans-serif',
           opacity: checked ? 1 : 0, transition: 'opacity 0.2s',
           pointerEvents: 'none'
         }}>ON</div>
-        
+
         <div style={{
-          position: 'absolute', left: '16px', top: 0, bottom: 0, 
-          display: 'flex', alignItems: 'center', color: '#fff', 
+          position: 'absolute', left: '16px', top: 0, bottom: 0,
+          display: 'flex', alignItems: 'center', color: '#fff',
           fontWeight: '500', fontSize: '14px', letterSpacing: '0.5px',
           fontFamily: 'sans-serif',
           opacity: checked ? 0 : 1, transition: 'opacity 0.2s',
@@ -164,12 +164,12 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
         }}>OFF</div>
       </div>
 
-      <div 
+      <div
         style={{
           position: 'absolute',
           top: padding,
           left: padding,
-          height: `calc(100% - ${padding*2}px)`,
+          height: `calc(100% - ${padding * 2}px)`,
           width: knobWidth,
           borderRadius: '27px',
           background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
@@ -242,25 +242,25 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
 
   return (
     <div className="flex flex-col items-center px-6 sm:px-8 space-y-6 w-full h-full justify-start pt-10 pb-20">
-  <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
-  
-  <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
-    
-    {/* Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 rounded-full" />
-    
-    {/* Image */}
-    <Image
-      src={getProfileImage()}
-      alt={name}
-      fill
-      className="object-cover rounded-full"
-      priority
-      unoptimized
-    />
-    
-  </div>
-</div>
+      <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
+
+        <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
+
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 rounded-full" />
+
+          {/* Image */}
+          <Image
+            src={getProfileImage()}
+            alt={name}
+            fill
+            className="object-cover rounded-full"
+            priority
+            unoptimized
+          />
+
+        </div>
+      </div>
 
       <div className="w-full space-y-2.5">
         <ContactItem icon={User} text={name} isName />
@@ -327,7 +327,7 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
         </div>
 
         <div className='flex flex-col items-center mx-4 mb-5 gap-1.5'>
-          <SkeuomorphicToggle 
+          <SkeuomorphicToggle
             checked={startFromHome}
             disabled={isCheckingStatus}
             isLoading={isCheckingStatus}
@@ -385,8 +385,8 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[300px] overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Top accent */}
             <div className="h-1.5 w-full bg-gradient-to-r from-red-400 to-red-600" />
-            <button 
-              onClick={() => setShowInactiveDialog(false)} 
+            <button
+              onClick={() => setShowInactiveDialog(false)}
               className="absolute top-4 right-4 p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all z-10"
             >
               <X size={18} strokeWidth={2.5} />
@@ -395,9 +395,9 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
               {/* Icon */}
               <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-1">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="2"/>
-                  <path d="M12 7v5" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round"/>
-                  <circle cx="12" cy="16" r="1.2" fill="#ef4444"/>
+                  <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="2" />
+                  <path d="M12 7v5" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
+                  <circle cx="12" cy="16" r="1.2" fill="#ef4444" />
                 </svg>
               </div>
               <div className="mb-2">
@@ -447,7 +447,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
           </div>
         </div>
 
-        <div 
+        <div
           onClick={() => setView('advertisement')}
           className={`w-full bg-[#002D35] rounded-[32px] text-white relative overflow-hidden border-[6px] border-[#E5ECEA] border-t-[20px] min-h-[160px] mt-2 cursor-pointer transition-all ${logoUrl ? 'p-0' : 'p-4 flex flex-col items-center justify-center'}`}
           style={{
@@ -458,28 +458,28 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
           onMouseEnter={e => (e.currentTarget.style.transform = 'perspective(600px) rotateX(0deg)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'perspective(600px) rotateX(2deg)')}
         >
-            {logoUrl ? (
-              <div className="relative w-full h-full min-h-[160px]">
-                <Image
-                  src={logoUrl}
-                  alt="Logo"
-                  fill
-                  className="object-contain"
-                  unoptimized
-                />
+          {logoUrl ? (
+            <div className="relative w-full h-full min-h-[160px]">
+              <Image
+                src={logoUrl}
+                alt="Logo"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <>
+              <div className="mb-2">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 5L25 15L35 15L27 22L30 32L20 25L10 32L13 22L5 15L15 15L20 5Z" stroke="#FFD700" strokeWidth="2" strokeLinejoin="round" />
+                  <circle cx="20" cy="20" r="5" stroke="#FFD700" strokeWidth="2" />
+                </svg>
               </div>
-            ) : (
-              <>
-                <div className="mb-2">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 5L25 15L35 15L27 22L30 32L20 25L10 32L13 22L5 15L15 15L20 5Z" stroke="#FFD700" strokeWidth="2" strokeLinejoin="round" />
-                    <circle cx="20" cy="20" r="5" stroke="#FFD700" strokeWidth="2" />
-                  </svg>
-                </div>
-                <div className="text-3xl font-serif tracking-[0.4em] font-bold text-[#FFD700]">ANANTA</div>
-                <div className="text-sm tracking-[0.6em] font-bold text-[#FFD700] mt-1">HEIGHTS</div>
-              </>
-            )}
+              <div className="text-3xl font-serif tracking-[0.4em] font-bold text-[#FFD700]">ANANTA</div>
+              <div className="text-sm tracking-[0.6em] font-bold text-[#FFD700] mt-1">HEIGHTS</div>
+            </>
+          )}
         </div>
       </div>
 
@@ -606,7 +606,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
 
         {/* Select Language - Now on Right, using Native Select Overlay */}
         <div className="flex-1 relative group hover:translate-y-0.5 transition-all drop-shadow-[0_5px_4px_rgba(0,0,0,0.35)] hover:drop-shadow-none">
-          <select 
+          <select
             onChange={(e) => changeLanguage && changeLanguage(e.target.value)}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 appearance-none"
             defaultValue=""
@@ -1301,7 +1301,7 @@ export const BrochureView = ({ setView }: ViewProps) => {
 
       {brochures.length > 0 && (
         <div className="space-y-4">
-         
+
           <button className="w-full bg-[#003B46] py-3 rounded-md font-bold text-white shadow-lg uppercase tracking-widest text-sm">Send Inquiry</button>
         </div>
       )}
@@ -1424,43 +1424,43 @@ export const DropboxView = ({ setView }: ViewProps) => {
         <span className="flex-1 text-center text-white font-black text-sm">{companyName}</span>
         <div className="w-6" />
       </div>
-    <div className="space-y-3">
-      <div className="flex items-center space-x-2">
-        <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Name :</span>
-        <input type="text" className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" />
-      </div>
-      <div className="flex items-center space-x-2">
-        <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Mobile :</span>
-        <input type="text" className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" />
-      </div>
-      <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-700 ml-1">Company Name</label>
-        <input type="text" className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none" />
-      </div>
-      <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-700 ml-1">Mention Changes</label>
-        <textarea className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none h-24 resize-none" />
-      </div>
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-gray-700 ml-1">Images</label>
-        <div className="flex space-x-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="w-20 h-20 bg-white rounded-xl border border-gray-200"></div>
-          ))}
-          <button className="w-10 h-20 flex items-center justify-center text-red-500"><Plus size={32} /></button>
-        </div>
-      </div>
-      <div className="space-y-1">
-        <label className="text-xs font-bold text-gray-700 ml-1">Video link</label>
+      <div className="space-y-3">
         <div className="flex items-center space-x-2">
-          <input type="text" className="flex-1 bg-white rounded-md py-1.5 px-4 text-sm border border-gray-200 outline-none" />
-          <button className="text-red-500"><Plus size={24} /></button>
+          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Name :</span>
+          <input type="text" className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" />
         </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Mobile :</span>
+          <input type="text" className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-700 ml-1">Company Name</label>
+          <input type="text" className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none" />
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-700 ml-1">Mention Changes</label>
+          <textarea className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none h-24 resize-none" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-700 ml-1">Images</label>
+          <div className="flex space-x-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-20 h-20 bg-white rounded-xl border border-gray-200"></div>
+            ))}
+            <button className="w-10 h-20 flex items-center justify-center text-red-500"><Plus size={32} /></button>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-700 ml-1">Video link</label>
+          <div className="flex items-center space-x-2">
+            <input type="text" className="flex-1 bg-white rounded-md py-1.5 px-4 text-sm border border-gray-200 outline-none" />
+            <button className="text-red-500"><Plus size={24} /></button>
+          </div>
+        </div>
+        <p className="text-[10px] text-gray-600 text-center pt-2">updates as son as possible from my side, <span className="font-bold">Thanks</span></p>
+        <button className="w-full bg-white py-2 rounded-md font-bold text-gray-800 shadow-sm border border-gray-200">Submit</button>
       </div>
-      <p className="text-[10px] text-gray-600 text-center pt-2">updates as son as possible from my side, <span className="font-bold">Thanks</span></p>
-      <button className="w-full bg-white py-2 rounded-md font-bold text-gray-800 shadow-sm border border-gray-200">Submit</button>
     </div>
-  </div>
   );
 };
 
@@ -1506,7 +1506,7 @@ export const PopupView = ({ setView }: ViewProps) => {
   return (
     <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
       <div className="bg-white rounded-[40px] w-full max-w-[340px] relative shadow-2xl overflow-hidden border-4 border-white animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh]">
-        <button 
+        <button
           onClick={(e) => { e.stopPropagation(); setView('dashboard'); }}
           className="absolute top-4 right-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-all z-50 shadow-md"
         >
@@ -1524,22 +1524,22 @@ export const PopupView = ({ setView }: ViewProps) => {
             />
           </div>
         )}
-        
+
         {popup.content && (
           <div className={`px-6 pt-8 pb-4 flex flex-col items-center text-center overflow-y-auto`}>
-             {!popup.image && (
-               <div className="h-16 w-16 bg-blue-50 shrink-0 rounded-3xl flex items-center justify-center text-blue-600 mb-4">
-                  <Bell size={32} />
-               </div>
-             )}
-             <p className="text-[14px] font-black text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full text-center">
-               {popup.content}
-             </p>
+            {!popup.image && (
+              <div className="h-16 w-16 bg-blue-50 shrink-0 rounded-3xl flex items-center justify-center text-blue-600 mb-4">
+                <Bell size={32} />
+              </div>
+            )}
+            <p className="text-[14px] font-black text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full text-center">
+              {popup.content}
+            </p>
           </div>
         )}
 
         <div className="p-5 pt-2 mt-auto w-full">
-           <button 
+          <button
             onClick={() => setView('dashboard')}
             className="w-full bg-[#003B46] text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-opacity-90 transition-all text-xs tracking-widest uppercase"
           >
@@ -1592,75 +1592,75 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
 
   return (
     <div className="px-4 space-y-4 pt-4 pb-6">
-        <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-          <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
-            <ChevronLeft size={24} />
-          </button>
-          <span className="flex-1 text-center text-white font-black text-sm">{companyName}</span>
-          <div className="w-6" />
-        </div>
+      <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
+        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
+          <ChevronLeft size={24} />
+        </button>
+        <span className="flex-1 text-center text-white font-black text-sm">{companyName}</span>
+        <div className="w-6" />
+      </div>
 
-        <div className="relative ">
-          {currentAd?.note && (
-            <div className="mb-3 flex justify-start">
-              <div className="w-full">
-                <span className="inline-block bg-white px-5 py-2.5 rounded-2xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50 break-words max-w-full">
-                  {currentAd.note}
-                </span>
-              </div>
+      <div className="relative ">
+        {currentAd?.note && (
+          <div className="mb-3 flex justify-start">
+            <div className="w-full">
+              <span className="inline-block bg-white px-5 py-2.5 rounded-2xl text-[12px] font-bold text-[#003B46] shadow-sm border border-gray-100/50 break-words max-w-full">
+                {currentAd.note}
+              </span>
+            </div>
+          </div>
+        )}
+        <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] bg-gray-100 border border-gray-200">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
+            </div>
+          ) : currentAd ? (
+            <>
+              <Image
+                src={getImageUrl(currentAd.image)}
+                alt="Advertisement"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              {filteredAds.length > 1 && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 z-10">
+                  {filteredAds.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? "w-6 bg-white shadow-sm" : "w-1.5 bg-white/40"}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+              <ImageIcon size={48} />
+              <p className="text-xs font-bold mt-2 uppercase">No {adTab} Projects</p>
             </div>
           )}
-          <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4] bg-gray-100 border border-gray-200">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent animate-spin rounded-full" />
-              </div>
-            ) : currentAd ? (
-              <>
-                <Image
-                  src={getImageUrl(currentAd.image)}
-                  alt="Advertisement"
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-                {filteredAds.length > 1 && (
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 z-10">
-                    {filteredAds.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentIndex(idx)}
-                        className={`h-1.5 rounded-full transition-all ${currentIndex === idx ? "w-6 bg-white shadow-sm" : "w-1.5 bg-white/40"}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                <ImageIcon size={48} />
-                <p className="text-xs font-bold mt-2 uppercase">No {adTab} Projects</p>
-              </div>
-            )}
-          </div>
-
-          {filteredAds.length > 1 && (
-            <>
-              <button
-                onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : filteredAds.length - 1))}
-                className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
-              >
-                <ChevronLeft size={28} />
-              </button>
-              <button
-                onClick={() => setCurrentIndex((prev) => (prev < filteredAds.length - 1 ? prev + 1 : 0))}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
-              >
-                <ChevronRight size={28} />
-              </button>
-            </>
-          )}
         </div>
+
+        {filteredAds.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : filteredAds.length - 1))}
+              className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronLeft size={28} />
+            </button>
+            <button
+              onClick={() => setCurrentIndex((prev) => (prev < filteredAds.length - 1 ? prev + 1 : 0))}
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </>
+        )}
+      </div>
     </div>
-   );
+  );
 };
