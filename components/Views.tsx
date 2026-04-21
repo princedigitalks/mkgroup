@@ -241,26 +241,26 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
   const logoUrl = getLogoImage();
 
   return (
-    <div className="flex flex-col items-center px-6 sm:px-8 space-y-6 w-full h-full justify-start pt-10 pb-20">
-      <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
+    <div className="flex flex-col items-center px-6 sm:px-8 space-y-6 w-full h-full justify-start pt-8 pb-8">
+<div className="w-38 h-38 sm:w-38 sm:h-38 min-w-[9.5rem] min-h-[9.5rem] sm:min-w-[9.5rem] sm:min-h-[9.5rem] aspect-square rounded-full overflow-hidden bg-gradient-to-tr from-gray-300 to-gray-100 p-2 shadow-xl mb-6">
 
-        <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
+  <div className="relative w-full h-full rounded-full overflow-hidden bg-white">
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 rounded-full" />
+    {/* Overlay */}
+    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 rounded-full" />
 
-          {/* Image */}
-          <Image
-            src={getProfileImage()}
-            alt={name}
-            fill
-            className="object-cover rounded-full"
-            priority
-            unoptimized
-          />
+    {/* Image */}
+    <Image
+      src={getProfileImage()}
+      alt={name}
+      fill
+      className="object-cover rounded-full"
+      priority
+      unoptimized
+    />
 
-        </div>
-      </div>
+  </div>
+</div>
 
       <div className="w-full space-y-2.5">
         <ContactItem icon={User} text={name} isName />
