@@ -25,6 +25,8 @@ interface MobileFrameProps {
   currentView: View;
   setView: (v: View) => void;
   setStartFromHome?: (v: boolean) => void;
+  isEditMode?: boolean;
+  setIsEditMode?: (v: boolean) => void;
 }
 
 const VIEW_LABELS: Record<string, string> = {
@@ -41,7 +43,7 @@ const VIEW_LABELS: Record<string, string> = {
   'popup': 'Popup',
 };
 
-export const MobileFrame = ({ children, currentView, setView, setStartFromHome }: MobileFrameProps) => {
+export const MobileFrame = ({ children, currentView, setView, setStartFromHome, isEditMode, setIsEditMode }: MobileFrameProps) => {
   const isHome = currentView === 'home';
   const isDashboard = currentView === 'dashboard';
   const isPopup = currentView === 'popup';
@@ -138,7 +140,14 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome }
           {isSubView && (
             <div className={`flex-shrink-0 bg-[#6B849E] py-2 px-4 flex items-center shadow-[0_-8px_20px_rgba(0,0,0,0.15)] ${isMobile ? 'fixed bottom-0 left-0 right-0 z-40' : 'rounded-b-[48px]'} min-h-[56px] relative`}>
               <button
-                onClick={() => setView('dashboard')}
+                onClick={() => {
+                  if (isEditMode) {
+                    if (setIsEditMode) setIsEditMode(false);
+                    setView('home');
+                  } else {
+                    setView('dashboard');
+                  }
+                }}
                 className="flex-shrink-0 text-white hover:opacity-80 transition-opacity z-10"
               >
                 <ChevronLeft size={32} strokeWidth={4} />

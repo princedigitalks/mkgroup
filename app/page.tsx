@@ -174,6 +174,7 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
     return () => window.clearTimeout(timer);
   }, []);
 
+  const [isEditMode, setIsEditMode] = useState(false);
   const [startFromHome, setStartFromHome] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('mkgroup:startFromHome');
@@ -215,9 +216,10 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
             startFromHome={startFromHome}
             setStartFromHome={setStartFromHome}
             builderData={builderData}
+            setIsEditMode={setIsEditMode}
           />
         );
-      case 'dashboard': return <DashboardView setView={setView} openPopup={() => setIsPopupOpen(true)} changeLanguage={changeLanguage} />;
+      case 'dashboard': return <DashboardView setView={setView} openPopup={() => setIsPopupOpen(true)} changeLanguage={changeLanguage} setIsEditMode={setIsEditMode} />;
       case 'contact-person': return <ContactPersonView setView={setView} />;
       case 'about-us': return <AboutUsView setView={setView} />;
       case 'appointment': return <AppointmentView setView={setView} />;
@@ -226,7 +228,7 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
       case 'video-gallery': return <VideoGalleryView setView={setView} />;
       case 'brochure': return <BrochureView setView={setView} />;
       case 'inquiry': return <InquiryView setView={setView} />;
-      case 'dropbox': return <DropboxView setView={setView} />;
+      case 'dropbox': return <DropboxView setView={setView} isEditMode={isEditMode} setIsEditMode={setIsEditMode} />;
       case 'advertisement': return null; // handled via render prop in MobileFrame
       case 'popup': 
         return (
@@ -289,7 +291,13 @@ export default function MKGroupApp({ showAccessPanel = true, builderId }: MKGrou
         </div>
       )}
 
-      <MobileFrame currentView={view} setView={setView} setStartFromHome={setStartFromHome}>
+      <MobileFrame 
+        currentView={view} 
+        setView={setView} 
+        setStartFromHome={setStartFromHome}
+        isEditMode={isEditMode}
+        setIsEditMode={setIsEditMode}
+      >
         {(adTab) => (
           <AnimatePresence mode="wait">
             <motion.div

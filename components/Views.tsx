@@ -35,12 +35,14 @@ interface ViewProps {
 
 interface DashboardViewProps extends ViewProps {
   openPopup?: () => void;
+  setIsEditMode?: (v: boolean) => void;
 }
 
 interface HomeViewProps extends ViewProps {
   startFromHome: boolean;
   setStartFromHome: (v: boolean) => void;
   builderData?: any;
+  setIsEditMode?: (v: boolean) => void;
 }
 
 const ContactItem = ({ icon: Icon, text, isName = false, isAddress = false }: { icon: any, text: string | React.ReactNode, isName?: boolean, isAddress?: boolean }) => (
@@ -90,9 +92,9 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
     if (!isDragging) return;
     setIsDragging(false);
     const pos = getPos();
-    if (checked && pos > maxDrag / 2) {
+    if (checked && pos < maxDrag / 2) {
       onChange(false);
-    } else if (!checked && pos < maxDrag / 2) {
+    } else if (!checked && pos > maxDrag / 2) {
       onChange(true);
     } else {
       if (Math.abs(currentX - startX) < 5) {
@@ -139,7 +141,7 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
         width: '100%',
         height: '100%',
         borderRadius: '27px',
-        background: checked ? '#3CAF4E' : '#3CAF4E',
+        background: '#3CAF4E',
         boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.4)',
         transition: isDragging ? 'none' : 'background 0.3s',
         position: 'relative',
@@ -148,20 +150,11 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
         <div style={{
           position: 'absolute', right: '20px', top: 0, bottom: 0,
           display: 'flex', alignItems: 'center', color: '#fff',
-          fontWeight: '500', fontSize: '14px', letterSpacing: '0.5px',
+          fontWeight: '500', fontSize: '14px', letterSpacing: '1px',
           fontFamily: 'sans-serif',
-          opacity: checked ? 1 : 0, transition: 'opacity 0.2s',
+          opacity: 1,
           pointerEvents: 'none'
         }}>ON</div>
-
-        <div style={{
-          position: 'absolute', left: '20px', top: 0, bottom: 0,
-          display: 'flex', alignItems: 'center', color: '#fff',
-          fontWeight: '500', fontSize: '14px', letterSpacing: '0.5px',
-          fontFamily: 'sans-serif',
-          opacity: checked ? 0 : 1, transition: 'opacity 0.2s',
-          pointerEvents: 'none'
-        }}></div>
       </div>
 
       <div
@@ -204,8 +197,7 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
   );
 };
 
-export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewProps) => {
-  const builderData = useContext(BuilderContext);
+export const HomeView = ({ setView, startFromHome, setStartFromHome, builderData, setIsEditMode }: HomeViewProps) => {
   const isMobile = useIsMobile();
   const [isCheckingStatus, setIsCheckingStatus] = React.useState(false);
   const [showInactiveDialog, setShowInactiveDialog] = React.useState(false);
@@ -395,7 +387,13 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
           />
         </div>
 
-        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+        <div 
+          onClick={() => {
+            if (setIsEditMode) setIsEditMode(true);
+            setView('dropbox');
+          }}
+          className="flex flex-col items-center gap-1.5 group cursor-pointer"
+        >
           <div >
             <Image
               src="/icons/share2.png"
@@ -449,7 +447,7 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome }: HomeViewP
   );
 };
 
-export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) => {
+export const DashboardView = ({ setView, changeLanguage, setIsEditMode }: DashboardViewProps) => {
   const builderData = useContext(BuilderContext);
 
   const getLogoImage = () => {
@@ -490,7 +488,7 @@ export const DashboardView = ({ setView, changeLanguage }: DashboardViewProps) =
           <div className="w-[1px] h-4 bg-[#E5ECEA] mr-2" />
           <div className="flex space-x-[1px]">
             {String(builderData?.viewCount || 0).padStart(6, '0').split('').map((n, i) => (
-              <div key={i} className=" w-4 h-6 flex items-center justify-center font-mono font-bold text-sm text-gray-800">{n}</div>
+              <div key={i} className="w-5 h-6 flex items-center justify-center font-['Digital7'] font-bold text-xl text-gray-800 pt-0.5">{n}</div>
             ))}
           </div>
         </div>
@@ -1472,53 +1470,136 @@ export const InquiryView = ({ setView }: ViewProps) => {
   );
 };
 
-export const DropboxView = ({ setView }: ViewProps) => {
+export const DropboxView = ({ setView, isEditMode, setIsEditMode }: { setView: (v: any) => void, isEditMode?: boolean, setIsEditMode?: (v: boolean) => void }) => {
   const builderData = useContext(BuilderContext);
   const companyName = builderData?.companyName?.trim() ? builderData.companyName.trim() : "-";
+  const [loading, setLoading] = React.useState(false);
+  const [form, setForm] = React.useState({
+    name: '',
+    mobile: '',
+    email: '',
+    companyName: '',
+    message: ''
+  });
+
+  const goBack = () => {
+    if (isEditMode) {
+      if (setIsEditMode) setIsEditMode(false);
+      setView('home');
+    } else {
+      setView('dashboard');
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.mobile || !form.message) {
+      toast.error("Please fill Name, Mobile and Mention Changes");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+      const response = await fetch(`${apiUrl}/dropbox`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          builderId: builderData?._id,
+          cardType: companyName,
+          name: form.name,
+          number: form.mobile,
+          email: form.email,
+          companyName: form.companyName,
+          message: form.message
+        })
+      });
+
+      const result = await response.json();
+      if (result.status === "Success") {
+        toast.success("Request submitted to Dropbox successfully!");
+        setForm({ name: '', mobile: '', email: '', companyName: '', message: '' });
+        goBack();
+      } else {
+        toast.error(result.message || "Failed to submit request");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="px-6 space-y-4 pt-4 pb-10">
       <div className="flex items-center justify-between bg-[#6B849E] py-2.5 px-4 rounded-xl font-black shadow-md border border-white/20">
-        <button onClick={() => setView('dashboard')} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
+        <button onClick={goBack} className="flex-shrink-0 text-white hover:opacity-80 transition-opacity">
           <ChevronLeft size={24} />
         </button>
-        <span className="flex-1 text-center text-white font-black text-sm">{companyName}</span>
+        <span className="flex-1 text-center text-white font-black text-sm">{isEditMode ? "Request Change" : companyName}</span>
         <div className="w-6" />
       </div>
       <div className="space-y-3">
         <div className="flex items-center space-x-2">
           <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Name :</span>
-          <input type="text" className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" />
+          <input 
+            type="text" 
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" 
+            placeholder="Enter your name"
+          />
         </div>
         <div className="flex items-center space-x-2">
           <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Mobile :</span>
-          <input type="text" className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" />
+          <input 
+            type="text" 
+            value={form.mobile}
+            onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+            className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" 
+            placeholder="Enter mobile number"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Email :</span>
+          <input 
+            type="email" 
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" 
+            placeholder="Enter email address"
+          />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-bold text-gray-700 ml-1">Company Name</label>
-          <input type="text" className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none" />
+          <input 
+            type="text" 
+            value={form.companyName}
+            onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+            className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none" 
+            placeholder="Enter your company name"
+          />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-bold text-gray-700 ml-1">Mention Changes</label>
-          <textarea className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none h-24 resize-none" />
+          <textarea 
+            value={form.message}
+            onChange={(e) => setForm({ ...form, message: e.target.value })}
+            className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none h-24 resize-none" 
+            placeholder="Describe the changes you want..."
+          />
         </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-gray-700 ml-1">Images</label>
-          <div className="flex space-x-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="w-20 h-20 bg-white rounded-xl border border-gray-200"></div>
-            ))}
-            <button className="w-10 h-20 flex items-center justify-center text-red-500"><Plus size={32} /></button>
-          </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-700 ml-1">Video link</label>
-          <div className="flex items-center space-x-2">
-            <input type="text" className="flex-1 bg-white rounded-md py-1.5 px-4 text-sm border border-gray-200 outline-none" />
-            <button className="text-red-500"><Plus size={24} /></button>
-          </div>
-        </div>
-        <p className="text-[10px] text-gray-600 text-center pt-2">updates as son as possible from my side, <span className="font-bold">Thanks</span></p>
-        <button className="w-full bg-white py-2 rounded-md font-bold text-gray-800 shadow-sm border border-gray-200">Submit</button>
+        
+        <p className="text-[10px] text-gray-600 text-center pt-2 italic">updates as soon as possible from my side, <span className="font-bold">Thanks</span></p>
+        <button 
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full bg-[#003B46] text-white py-3 rounded-xl font-bold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </button>
       </div>
     </div>
   );
