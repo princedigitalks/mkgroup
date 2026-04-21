@@ -505,7 +505,7 @@ export const DashboardView = ({ setView, changeLanguage, setIsEditMode }: Dashbo
         )}
       </div>
 
-     <div className="grid grid-cols-6 sm:grid-cols-6 gap-2 w-full px-2 mt-4">
+    <div className={`grid grid-cols-6 sm:grid-cols-6 gap-2 w-full px-2 ${adImageUrl ? 'mt-4' : 'mt-8'}`}>
   {[
     {
       img: '/icons/phone.png',
