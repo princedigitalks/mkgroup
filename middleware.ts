@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.nextUrl.hostname;
 
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '217.216.59.191';
   const canBypassLocalLoader =
     pathname === LOCAL_LOADER_PATH ||
     pathname.startsWith('/_next') ||
