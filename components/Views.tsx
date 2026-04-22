@@ -427,13 +427,14 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome, builderData
               <X size={18} strokeWidth={2.5} />
             </button>
             <div className="p-6 flex flex-col items-center text-center gap-4 pt-10">
-              {/* Icon */}
-              <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-1">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="2" />
-                  <path d="M12 7v5" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
-                  <circle cx="12" cy="16" r="1.2" fill="#ef4444" />
-                </svg>
+              <div className="relative w-20 h-20 mb-1">
+                <Image
+                  src="/Nfc.png"
+                  alt="NFC"
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
               </div>
               <div className="mb-2">
                 <p className="text-sm font-black text-gray-900 mb-1">Profile Inactive</p>

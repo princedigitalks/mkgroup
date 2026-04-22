@@ -2,24 +2,18 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const USER_LOGIN_PATH = '/user/login';
 const ADMIN_LOGIN_PATH = '/admin/login';
-const LOCAL_LOADER_PATH = '/local-loader';
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.nextUrl.hostname;
 
   const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-  const canBypassLocalLoader =
-    pathname === LOCAL_LOADER_PATH ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname === '/favicon.ico' ||
-    pathname === '/robots.txt' ||
-    pathname === '/sitemap.xml';
 
-  if (isLocalhost && pathname === '/' && !canBypassLocalLoader) {
+  if (isLocalhost && pathname === '/' && !isProduction) {
     const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = LOCAL_LOADER_PATH;
+    rewriteUrl.pathname = '/local-loader';
     rewriteUrl.search = '';
     return NextResponse.rewrite(rewriteUrl);
   }
