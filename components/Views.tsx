@@ -409,41 +409,37 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome, builderData
       </div>
 
       {/* Inactive Dialog */}
-      {showInactiveDialog && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-6">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowInactiveDialog(false)}
-          />
-          {/* Dialog */}
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[300px] overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Top accent */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-red-400 to-red-600" />
-            <button
-              onClick={() => setShowInactiveDialog(false)}
-              className="absolute top-4 right-4 p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all z-10"
-            >
-              <X size={18} strokeWidth={2.5} />
-            </button>
-            <div className="p-6 flex flex-col items-center text-center gap-4 pt-10">
-              <div className="relative w-20 h-20 mb-1">
-                <Image
-                  src="/Nfc.png"
-                  alt="NFC"
-                  fill
-                  className="object-contain"
-                  unoptimized
-                />
-              </div>
-              <div className="mb-2">
-                <p className="text-sm font-black text-gray-900 mb-1">Profile Inactive</p>
-                <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[200px] mx-auto">{dialogMessage}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+{showInactiveDialog && (
+  <div className="fixed inset-0 z-[200] flex items-center justify-center px-6">
+    
+    {/* Backdrop */}
+    <div
+      className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      onClick={() => setShowInactiveDialog(false)}
+    />
+
+    {/* Popup Box */}
+    <div className="relative w-40 h-40 animate-in zoom-in-95 duration-200">
+      
+      {/* Close Button */}
+      <button
+        onClick={() => setShowInactiveDialog(false)}
+        className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 hover:bg-red-500 hover:text-white transition"
+      >
+        ✕
+      </button>
+
+      {/* Image */}
+      <Image
+        src="/Nfc.png"
+        alt="NFC"
+        fill
+        className="object-contain"
+        unoptimized
+      />
+    </div>
+  </div>
+)}
     </div>
   );
 };
