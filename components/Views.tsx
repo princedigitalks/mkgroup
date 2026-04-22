@@ -9,7 +9,7 @@ import {
   Mail, Mic, Plus, Download, Bell, Eye, Send, Check, X
 } from 'lucide-react';
 import { useContext, useState } from 'react';
-import { BuilderContext } from '@/app/page';
+import { BuilderContext } from '@/components/MKGroupApp';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
@@ -493,16 +493,16 @@ export const DashboardView = ({ setView, changeLanguage, setIsEditMode }: Dashbo
           </div>
         </div>
 
-        {adImageUrl && (
           <div 
             onClick={() => setView('advertisement')}
             className="w-full mt-4 px-1 pb-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-             <div className="relative w-full aspect-[21/9] rounded-[24px] overflow-hidden border-2 border-[#E5ECEA] shadow-lg">
-                <Image src={adImageUrl} alt="Advertisement" fill className="object-cover" unoptimized />
+             <div className="relative w-full aspect-[21/9] rounded-[24px] overflow-hidden border-2 border-[#E5ECEA] shadow-lg bg-[#E5ECEA]/30">
+                {adImageUrl && (
+                  <Image src={adImageUrl} alt="Advertisement" fill className="object-cover" unoptimized />
+                )}
              </div>
           </div>
-        )}
       </div>
 
     <div className={`grid grid-cols-6 sm:grid-cols-6 gap-2 w-full px-2 ${adImageUrl ? 'mt-4' : 'mt-8'}`}>
@@ -1646,46 +1646,39 @@ export const PopupView = ({ setView }: ViewProps) => {
 
   return (
     <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-      <div className="bg-white rounded-[40px] w-full max-w-[340px] relative shadow-2xl overflow-hidden border-4 border-white animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh]">
+      <div className="relative w-full max-w-[340px] animate-in zoom-in-95 duration-300">
         <button
           onClick={(e) => { e.stopPropagation(); setView('dashboard'); }}
-          className="absolute top-4 right-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-all z-50 shadow-md"
+          className="absolute -top-14 right-0 p-2.5 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 hover:scale-105 active:scale-95 transition-all z-[110] shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-white/40 flex items-center justify-center cursor-pointer"
         >
-          <X size={18} strokeWidth={3} />
+          <X size={22} strokeWidth={2.5} />
         </button>
 
-        {popup.image && (
-          <div className={`relative w-full shrink-0 overflow-hidden rounded-b-[40px] ${popup.content ? 'h-[280px]' : 'h-[360px]'}`}>
-            <Image
-              src={getImageUrl(popup.image)}
-              alt="Promotion"
-              fill
-              className="object-contain bg-gray-100"
-              unoptimized
-            />
-          </div>
-        )}
+        <div className="bg-white rounded-[40px] w-full relative shadow-2xl overflow-hidden border-4 border-white flex flex-col max-h-[85vh]">
+          {popup.image && (
+            <div className={`relative w-full shrink-0 overflow-hidden ${popup.content ? 'h-[280px]' : 'h-[360px]'}`}>
+              <Image
+                src={getImageUrl(popup.image)}
+                alt="Promotion"
+                fill
+                className="object-contain bg-gray-100"
+                unoptimized
+              />
+            </div>
+          )}
 
-        {popup.content && (
-          <div className={`px-6 pt-8 pb-4 flex flex-col items-center text-center overflow-y-auto`}>
-            {!popup.image && (
-              <div className="h-16 w-16 bg-blue-50 shrink-0 rounded-3xl flex items-center justify-center text-blue-600 mb-4">
-                <Bell size={32} />
-              </div>
-            )}
-            <p className="text-[14px] font-black text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full text-center">
-              {popup.content}
-            </p>
-          </div>
-        )}
-
-        <div className="p-5 pt-2 mt-auto w-full">
-          <button
-            onClick={() => setView('dashboard')}
-            className="w-full bg-[#003B46] text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-opacity-90 transition-all text-xs tracking-widest uppercase"
-          >
-            Close
-          </button>
+          {popup.content && (
+            <div className={`px-6 pt-8 pb-4 flex flex-col items-center text-center overflow-y-auto`}>
+              {!popup.image && (
+                <div className="h-16 w-16 bg-blue-50 shrink-0 rounded-3xl flex items-center justify-center text-blue-600 mb-4">
+                  <Bell size={32} />
+                </div>
+              )}
+              <p className="text-[14px] font-black text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full text-center">
+                {popup.content}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -84,13 +84,7 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
-                <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900 transition-colors">Remember me</span>
-              </label>
-
-            </div>
+            
 
             <button 
               disabled={isLoading}
@@ -108,11 +102,8 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Footer Links */}
-        <div className="text-center mt-8 space-y-4">
-          <p className="text-sm text-gray-500">
-            Are you a user? {" "}
-            <Link href="/user/login" className="font-bold text-black hover:underline">User Login</Link>
-          </p>
+        <div className="text-center mt-4 space-y-4">
+          
           <div className="flex items-center justify-center gap-6">
             <Link href="/" className="text-xs font-medium text-gray-400 hover:text-gray-900 transition-colors">Return to Home</Link>
             <span className="h-1 w-1 bg-gray-300 rounded-full" />

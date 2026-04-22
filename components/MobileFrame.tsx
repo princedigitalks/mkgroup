@@ -3,7 +3,7 @@
 import React, { useContext } from 'react';
 import { Home, Box, Share2, ChevronLeft, FileText } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { BuilderContext } from '@/app/page';
+import { BuilderContext } from '@/components/MKGroupApp';
 
 type View =
   | 'home'

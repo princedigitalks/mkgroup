@@ -10,7 +10,7 @@ import api from "@/lib/axios";
 
 interface Popup {
   _id: string;
-  type: "text" | "image";
+  type: "text" | "image" | "both";
   content?: string;
   image?: string;
   isActive: boolean;
@@ -22,7 +22,6 @@ export default function PopupManagementPage() {
   const [popups, setPopups] = useState<Popup[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [type, setType] = useState<"text" | "image">("text");
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -59,14 +58,14 @@ export default function PopupManagementPage() {
   };
 
   const handleAddPopup = async () => {
-    if (type === "text" && !content) return toast.error("Please enter message");
-    if (type === "image" && !selectedFile) return toast.error("Please select an image");
+    if (!content && !selectedFile) return toast.error("Please enter a message or select an image");
 
     try {
       setIsUploading(true);
       const formData = new FormData();
-      formData.append("type", type);
-      if (type === "text") formData.append("content", content);
+      const popupType = content && selectedFile ? "both" : selectedFile ? "image" : "text";
+      formData.append("type", popupType);
+      if (content) formData.append("content", content);
       if (selectedFile) formData.append("image", selectedFile);
       formData.append("isActive", "true"); 
 
@@ -149,32 +148,10 @@ export default function PopupManagementPage() {
                   </button>
                 </div>
 
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setType("text")}
-                    className={`flex-1 py-4 rounded-2xl border-2 font-black text-xs transition-all flex items-center justify-center gap-2 ${type === 'text' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-gray-50 text-gray-400'}`}
-                  >
-                    <MessageSquare size={16} /> TEXT
-                  </button>
-                  <button 
-                    onClick={() => setType("image")}
-                    className={`flex-1 py-4 rounded-2xl border-2 font-black text-xs transition-all flex items-center justify-center gap-2 ${type === 'image' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-gray-50 text-gray-400'}`}
-                  >
-                    <ImageIcon size={16} /> IMAGE
-                  </button>
-                </div>
-
-                {type === "text" ? (
-                  <textarea 
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Type your alert message here..."
-                    className="w-full h-40 p-6 bg-gray-50 border border-gray-100 rounded-3xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700 transition-all resize-none"
-                  />
-                ) : (
+                <div className="space-y-4">
                   <div 
                     onClick={() => fileRef.current?.click()}
-                    className="w-full h-56 bg-gray-50 border-2 border-dashed border-gray-200 rounded-[32px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all overflow-hidden relative group"
+                    className="w-full h-40 bg-gray-50 border-2 border-dashed border-gray-200 rounded-[32px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all overflow-hidden relative group"
                   >
                     {preview ? (
                       <div className="relative w-full h-full">
@@ -185,15 +162,22 @@ export default function PopupManagementPage() {
                       </div>
                     ) : (
                       <>
-                        <div className="h-16 w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-300 mb-3">
-                           <Upload size={28} />
+                        <div className="h-12 w-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-300 mb-2">
+                           <Upload size={24} />
                         </div>
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Upload Banner Image</span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center px-4">Upload Banner Image (Optional)</span>
                       </>
                     )}
                     <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
                   </div>
-                )}
+
+                  <textarea 
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Type your alert message here... (Optional)"
+                    className="w-full h-32 p-5 bg-gray-50 border border-gray-100 rounded-3xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700 transition-all resize-none text-sm"
+                  />
+                </div>
 
                 <button 
                   onClick={handleAddPopup}
@@ -234,18 +218,21 @@ export default function PopupManagementPage() {
                       </div>
                     </div>
 
-                    {popup.type === 'text' ? (
-                      <div className="bg-gray-50 p-4 rounded-xl text-sm font-bold text-gray-700 min-h-[100px] border border-gray-100">
-                        {popup.content}
-                      </div>
-                    ) : (
-                      <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-100">
-                        <img src={getImageUrl(popup.image!)} className="w-full h-full object-cover" />
-                      </div>
-                    )}
+                    <div className="bg-gray-50 border border-gray-100 rounded-xl overflow-hidden flex flex-col">
+                      {popup.image && (
+                        <div className="relative aspect-video w-full bg-gray-100">
+                          <img src={getImageUrl(popup.image)} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      {popup.content && (
+                        <div className="p-4 text-sm font-bold text-gray-700 flex-1 whitespace-pre-wrap">
+                          {popup.content}
+                        </div>
+                      )}
+                    </div>
 
                     <div className="mt-3 flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase">
-                      {popup.type === 'text' ? <MessageSquare size={12} /> : <ImageIcon size={12} />}
+                      {popup.type === 'text' ? <MessageSquare size={12} /> : popup.type === 'image' ? <ImageIcon size={12} /> : <div className="flex gap-1"><ImageIcon size={12}/><MessageSquare size={12}/></div>}
                       {popup.type} popup • Created {new Date(popup.createdAt as any).toLocaleDateString()}
                     </div>
                   </div>

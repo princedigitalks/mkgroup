@@ -147,11 +147,8 @@ export default function UserLoginPage() {
           </form>
 
           <div className="mt-12 text-center">
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-              Need access? {" "}
-              <Link href="/user/inquiry" className="text-blue-600 hover:underline">Request Account</Link>
-            </p>
-            <div className="mt-8 pt-8 border-t border-gray-100 flex items-center justify-center gap-6">
+         
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-center gap-6">
               <Link href="/admin/login" className="text-[10px] font-black text-gray-400 hover:text-blue-600 uppercase tracking-[2px] transition-colors flex items-center gap-2">
                 <ShieldCheck size={14} /> Admin Access
               </Link>

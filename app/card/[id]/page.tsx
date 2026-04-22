@@ -1,5 +1,5 @@
 import React from 'react';
-import MKGroupApp from '@/app/page';
+import MKGroupApp from '@/components/MKGroupApp';
 
 type CardPageProps = {
   params: Promise<{

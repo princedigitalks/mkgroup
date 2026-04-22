@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Camera, Phone, Globe, Mail, Pencil, Check, X, Loader2 } from "lucide-react";
+import { Camera, Phone, Globe, Mail, Pencil, Check, X, Loader2, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/redux/store";
 import { fetchProfile, updateProfile } from "@/lib/redux/slices/authSlice";
 import { toast } from "sonner";
+import api from "@/lib/axios";
 
 export default function ScreenPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -94,6 +95,25 @@ export default function ScreenPage() {
     }
   };
 
+  const handleRemoveAdImage = async () => {
+    try {
+      if (selectedAdImage) {
+        setSelectedAdImage(null);
+        setAdPreviewUrl("");
+        return;
+      }
+      if (localProfile.adImage) {
+        const response = await api.delete("/builder/me/ad-image");
+        if (response.data.status === "Success") {
+          toast.success("Advertisement image removed successfully");
+          dispatch(fetchProfile());
+        }
+      }
+    } catch (err: any) {
+      toast.error("Failed to remove advertisement image");
+    }
+  };
+
   const screenFields = [
     { key: "companyName", label: "Company Name", icon: Globe, placeholder: "Enter company name" },
     { key: "secondaryNumber", label: "Secondary Number", icon: Phone, placeholder: "Enter secondary number" },
@@ -142,8 +162,11 @@ export default function ScreenPage() {
                     </div>
                   )}
                 </div>
-                <button onClick={() => adRef.current?.click()} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 bg-white/90 text-blue-600 flex items-center justify-center hover:bg-white transition-all rounded-full shadow-xl grayscale-0 opacity-0 group-hover:opacity-100"><Camera size={20} /></button>
-                <button onClick={() => adRef.current?.click()} className="absolute -bottom-2 -right-2 h-10 w-10 bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 transition-colors rounded-full border-2 border-white shadow-lg"><Camera size={18} /></button>
+                <button onClick={() => adRef.current?.click()} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 bg-white/90 text-blue-600 flex items-center justify-center hover:bg-white transition-all rounded-full shadow-xl grayscale-0 opacity-0 group-hover:opacity-100 z-10"><Camera size={20} /></button>
+                <button onClick={() => adRef.current?.click()} className="absolute -bottom-2 -right-2 h-10 w-10 bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 transition-colors rounded-full border-2 border-white shadow-lg z-10"><Camera size={18} /></button>
+                {getAdImageUrl() && (
+                  <button onClick={(e) => { e.stopPropagation(); handleRemoveAdImage(); }} className="absolute -top-2 -right-2 h-8 w-8 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors rounded-full border-2 border-white shadow-md z-10"><Trash2 size={14} /></button>
+                )}
                 <input ref={adRef} type="file" accept="image/*" className="hidden" onChange={handleAdImageChange} />
               </div>
            </div>
