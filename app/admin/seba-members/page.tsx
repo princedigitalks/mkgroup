@@ -189,7 +189,7 @@ export default function SebaMembersPage() {
         <div className="flex items-center gap-4 py-1">
           <div className="h-12 w-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex-shrink-0">
             {row.image ? (
-              <img src={`http://localhost:5001/builder/${row.image}`} className="h-full w-full object-cover" alt={row.name} />
+              <img src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${row.image}`} className="h-full w-full object-cover" alt={row.name} />
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-indigo-50 text-indigo-600 font-bold text-lg">
                 {row.name.charAt(0)}
@@ -230,7 +230,7 @@ export default function SebaMembersPage() {
         <div>
           {row.pdf ? (
             <a 
-              href={`http://localhost:5001/builder/${row.pdf}`} 
+              href={`${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${row.pdf}`} 
               target="_blank" 
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-indigo-100 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all cursor-pointer shadow-sm"

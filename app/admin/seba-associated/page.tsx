@@ -157,7 +157,7 @@ export default function SebaAssociatedPage() {
       header: "Image", accessor: "image",
       render: (row: any) => (
         <div className="h-12 w-12 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden shadow-sm">
-          <img src={`http://localhost:5001/builder/${row.image}`} alt={row.name} className="h-full w-full object-cover" />
+          <img src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${row.image}`} alt={row.name} className="h-full w-full object-cover" />
         </div>
       )
     },
