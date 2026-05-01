@@ -197,6 +197,115 @@ const SkeuomorphicToggle = ({ checked, onChange, disabled, isLoading }: { checke
   );
 };
 
+const NFCCard = () => {
+  const [isForm, setIsForm] = useState(false);
+  const [form, setForm] = useState({ name: '', mobile: '', companyName: '' });
+  const [loading, setLoading] = useState(false);
+  const builderData = useContext(BuilderContext);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.mobile) {
+      toast.error("Please fill Name and Mobile");
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nfc/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, userId: builderData?._id }),
+      });
+      const result = await response.json();
+      if (result.status === "Success") {
+        toast.success("NFC Request submitted!");
+        setIsForm(false);
+        setForm({ name: '', mobile: '', companyName: '' });
+      } else {
+        toast.error(result.message || "Failed to submit");
+      }
+    } catch (err) {
+      toast.error("Error submitting request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isForm) {
+    return (
+      <div className="bg-white rounded-[32px] overflow-hidden shadow-2xl border-t-[8px] border-red-600 border-b-[8px] border-green-600 p-6 flex flex-col items-center text-center space-y-4 w-full max-w-[320px] mx-auto">
+        <div className="relative w-32 h-32">
+          {/* Using a placeholder logo as the SEBA logo is not available */}
+          <div className="w-full h-full flex flex-col items-center justify-center">
+           <Image src="/Nfc.png" alt="SEBA" width={120} height={160} />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-xl font-black text-gray-900 leading-tight">SEBA members NFC ID card is free</h2>
+          <p className="text-gray-500 text-[11px] font-bold px-4 leading-relaxed">
+            If you are interested for full NFC System, Please fill details and Submit (Chargeable)
+          </p>
+        </div>
+        <button 
+          onClick={() => setIsForm(true)}
+          className="bg-[#2B4193] text-white px-8 py-2.5 rounded-full font-black text-sm shadow-lg hover:opacity-95 active:scale-95 transition-all mt-2"
+        >
+          Click for NFC System
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#CCCCCC] rounded-[32px] overflow-hidden shadow-2xl border-t-[8px] border-red-600 border-b-[8px] border-green-600 p-6 flex flex-col items-center space-y-5 w-full max-w-[320px] mx-auto">
+      <h2 className="text-lg font-black text-gray-900 uppercase tracking-tight">Full NFC System Required</h2>
+      <form onSubmit={handleSubmit} className="w-full space-y-3">
+        <div className="relative">
+          <input 
+            type="text" 
+            className="w-full bg-white rounded-full pl-16 pr-4 py-1.5 text-sm outline-none shadow-inner font-bold border border-gray-300/50"
+            value={form.name}
+            onChange={(e) => setForm({...form, name: e.target.value})}
+            required
+          />
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[11px] font-black text-amber-900/70">Name :</span>
+        </div>
+        <div className="relative">
+          <input 
+            type="text" 
+            className="w-full bg-white rounded-full pl-16 pr-4 py-1.5 text-sm outline-none shadow-inner font-bold border border-gray-300/50"
+            value={form.mobile}
+            onChange={(e) => setForm({...form, mobile: e.target.value})}
+            required
+          />
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[11px] font-black text-amber-900/70">Mobile :</span>
+        </div>
+        <div className="relative">
+          <input 
+            type="text" 
+            className="w-full bg-white rounded-full pl-32 pr-4 py-1.5 text-sm outline-none shadow-inner font-bold border border-gray-300/50"
+            value={form.companyName}
+            onChange={(e) => setForm({...form, companyName: e.target.value})}
+          />
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[11px] font-black text-amber-900/70">Company Name :</span>
+        </div>
+        <div className="flex justify-center pt-2">
+          <button 
+            type="submit"
+            disabled={loading}
+            className="bg-[#D1E9F6] text-gray-900 px-10 py-2 rounded-lg font-black shadow-md border border-gray-400/50 hover:bg-white active:scale-95 transition-all text-sm uppercase tracking-widest"
+          >
+            {loading ? "..." : "Submit"}
+          </button>
+        </div>
+      </form>
+      <div className="text-center space-y-0.5">
+        <p className="text-[10px] font-bold text-gray-800">Shortly contact you marketing Person - <span className="font-black">Thanks</span></p>
+      </div>
+    </div>
+  );
+};
+
 export const HomeView = ({ setView, startFromHome, setStartFromHome, builderData, setIsEditMode }: HomeViewProps) => {
   const isMobile = useIsMobile();
   const [isCheckingStatus, setIsCheckingStatus] = React.useState(false);
@@ -307,39 +416,18 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome, builderData
       <div className="w-full flex justify-between items-center px-2 ">
         <div className="flex flex-col items-center gap-1.5 group cursor-pointer" onClick={() => {
           if (typeof window === 'undefined') return;
-          const profileUrl = builderData?.website
-            ? builderData.website.startsWith('http')
-              ? builderData.website
-              : `https://${builderData.website}`
-            : window.location.href;
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/v1/api';
-          const baseUrl = apiUrl.split('/v1/api')[0];
-          const imageUrl = builderData?.profileImage
-            ? `${baseUrl}/builder/${builderData.profileImage}`
-            : builderData?.logo
-              ? `${baseUrl}/builder/${builderData.logo}`
-              : '';
-          const shareLines = [
-            builderData?.companyName || 'MK GROUP',
-            builderData?.name,
-            builderData?.location,
-            builderData?.timing ? `Timing: ${builderData.timing}` : undefined,
-            imageUrl ? `Image: ${imageUrl}` : undefined,
-            `Profile: ${profileUrl}`,
-            'Open this profile now!'
-          ].filter(Boolean);
-          const shareText = shareLines.join('\n');
+          const profileUrl = window.location.href;
           const shareData = {
-            title: builderData?.companyName || 'MK GROUP',
-            text: shareText,
+            title: builderData?.name || builderData?.companyName || 'MK GROUP',
+            text: `Check out ${builderData?.name || 'this profile'}'s digital card!`,
             url: profileUrl,
           };
           if (navigator.share) {
             navigator.share(shareData as ShareData).catch(() => {
-              window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+              window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(profileUrl)}`, '_blank');
             });
           } else {
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(profileUrl)}`, '_blank');
           }
         }}>
           <div>
@@ -419,24 +507,18 @@ export const HomeView = ({ setView, startFromHome, setStartFromHome, builderData
     />
 
     {/* Popup Box */}
-    <div className="relative w-80 h-80 animate-in zoom-in-95 duration-200">
+    <div className="relative w-full max-w-[340px] animate-in zoom-in-95 duration-200">
       
       {/* Close Button */}
       <button
         onClick={() => setShowInactiveDialog(false)}
-        className="absolute top-[60px] right-3 z-10 w-8 h-8 rounded-full bg-red-500 shadow-lg flex items-center justify-center text-white   transition"
+        className="absolute -top-12 right-0 z-[210] w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/40 shadow-lg flex items-center justify-center text-white hover:bg-white/30 transition-all cursor-pointer"
       >
-        ✕
+        <X size={24} strokeWidth={2.5} />
       </button>
 
-      {/* Image */}
-      <Image
-        src="/Nfc.png"
-        alt="NFC"
-        fill
-        className="object-contain"
-        unoptimized
-      />
+      {/* NFC Card Component */}
+      <NFCCard />
     </div>
   </div>
 )}
@@ -795,44 +877,49 @@ export const AppointmentView = ({ setView }: ViewProps) => {
       <div className="flex items-center justify-center bg-[#6B849E] py-3 px-4 rounded-t-xl rounded-b-none font-black shadow-md border border-white/20 border-b-0 mb-4">
         <span className="text-white font-black text-sm">{companyName}</span>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-3.5 mt-4">
-        <div className="space-y-1">
-          <input type="text" placeholder="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm focus:border-blue-300 transition-colors" />
+      <form onSubmit={handleSubmit} className="space-y-3 mt-4">
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Name" 
+            value={form.name} 
+            onChange={(e) => setForm({ ...form, name: e.target.value })} 
+            className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm focus:border-blue-300 transition-colors" 
+          />
+          <span className="absolute left-3 top-2 text-[10px] font-black text-red-500">*</span>
         </div>
-        <div className="space-y-2">
-          <input type="text" placeholder="Mobile" required value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm focus:border-blue-300 transition-colors" />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-black text-red-500 ml-5 uppercase tracking-tighter">*</label>
-          <div className="relative">
-            <select value={form.person} onChange={(e) => setForm({ ...form, person: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm appearance-none text-gray-500">
-              <option value="">Select Person</option>
-            </select>
-            <ChevronRight className="absolute right-5 top-3.5 text-blue-900 rotate-90" size={18} />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[11px] font-black text-red-500 ml-5 uppercase tracking-tighter">*</label>
-          <div className="relative">
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm appearance-none text-gray-500">
-              <option value="">Select category</option>
-              {/* <option>Consultation</option>
-              <option>Follow-up</option>
-              <option>Emergency</option>
-              <option>Routine Checkup</option> */}
-            </select>
-            <ChevronRight className="absolute right-5 top-3.5 text-blue-900 rotate-90" size={18} />
-          </div>
+        <div className="relative">
+          <input 
+            type="text" 
+            placeholder="Mobile" 
+            value={form.mobile} 
+            onChange={(e) => setForm({ ...form, mobile: e.target.value })} 
+            className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm focus:border-blue-300 transition-colors" 
+          />
+          <span className="absolute left-3 top-2 text-[10px] font-black text-red-500">*</span>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-[11px] font-black text-gray-500 ml-5 uppercase tracking-tighter">Date</label>
-          <div className="relative">
-            <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm text-gray-700" />
-            <Calendar className="absolute right-5 top-3 text-[#A855F7] pointer-events-none" size={20} />
-          </div>
+        <div className="relative">
+          <select value={form.person} onChange={(e) => setForm({ ...form, person: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm appearance-none text-gray-500">
+            <option value="">Select Person</option>
+          </select>
+          <ChevronRight className="absolute right-5 top-3.5 text-blue-900 rotate-90" size={18} />
+          <span className="absolute left-3 top-2 text-[10px] font-black text-red-500">*</span>
+        </div>
+
+        <div className="relative">
+          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm appearance-none text-gray-500">
+            <option value="">Select category</option>
+          </select>
+          <ChevronRight className="absolute right-5 top-3.5 text-blue-900 rotate-90" size={18} />
+          <span className="absolute left-3 top-2 text-[10px] font-black text-red-500">*</span>
+        </div>
+
+        <div className="relative">
+          <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full bg-white rounded-full py-3 px-6 text-sm font-bold border border-gray-200 outline-none shadow-sm text-gray-700" />
+          <Calendar className="absolute right-5 top-3 text-[#A855F7] pointer-events-none" size={20} />
+          <span className="absolute left-6 -top-2 bg-white px-1 text-[9px] font-black text-gray-500 uppercase tracking-tighter">Date</span>
+          <span className="absolute left-3 top-2 text-[10px] font-black text-red-500">*</span>
         </div>
 
         <div className="space-y-2 pt-1">
@@ -871,7 +958,7 @@ export const PhotoGalleryView = ({ setView }: ViewProps) => {
   const companyName = builderData?.companyName?.trim() ? builderData.companyName.trim() : "-";
   const [photos, setPhotos] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [activeTab, setActiveTab] = React.useState<"General" | "Awarded">("General");
+  const [activeTab, setActiveTab] = React.useState<"Impressive" | "Awarded">("Impressive");
   const [currentIndex, setCurrentIndex] = React.useState(0);
 
   React.useEffect(() => {
@@ -881,7 +968,12 @@ export const PhotoGalleryView = ({ setView }: ViewProps) => {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/gallery-image/user/${builderData._id}`);
         const result = await response.json();
         if (result.status === "Success") {
-          setPhotos(result.data);
+          // Normalize categories: change "General" to "Impressive" if needed
+          const normalizedData = result.data.map((item: any) => ({
+            ...item,
+            category: item.category === "General" ? "Impressive" : item.category
+          }));
+          setPhotos(normalizedData);
         }
       } catch (error) {
         console.error("Failed to fetch photos:", error);
@@ -901,7 +993,7 @@ export const PhotoGalleryView = ({ setView }: ViewProps) => {
   const filteredPhotos = photos.filter((p) => p.category === activeTab);
   const currentPhoto = filteredPhotos[currentIndex];
 
-  const handleTabChange = (tab: "General" | "Awarded") => {
+  const handleTabChange = (tab: "Impressive" | "Awarded") => {
     setActiveTab(tab);
     setCurrentIndex(0);
   };
@@ -977,10 +1069,10 @@ export const PhotoGalleryView = ({ setView }: ViewProps) => {
 
       <div className="flex justify-center space-x-4">
         <button
-          onClick={() => handleTabChange("General")}
-          className={`px-8 py-2 rounded-xl text-xs font-black shadow-md border transition-all ${activeTab === 'General' ? 'bg-[#003B46] text-white border-[#003B46]' : 'bg-white text-gray-600 border-gray-200'}`}
+          onClick={() => handleTabChange("Impressive")}
+          className={`px-8 py-2 rounded-xl text-xs font-black shadow-md border transition-all ${activeTab === 'Impressive' ? 'bg-[#003B46] text-white border-[#003B46]' : 'bg-white text-gray-600 border-gray-200'}`}
         >
-          General
+          Impressive
         </button>
         <button
           onClick={() => handleTabChange("Awarded")}
@@ -1039,12 +1131,12 @@ export const ContactPersonView = ({ setView }: ViewProps) => {
       ) : persons.length > 0 ? (
         persons.map((person) => (
           <div key={person._id} className="bg-white/40 rounded-2xl p-3 flex space-x-4 border border-white/60 shadow-sm backdrop-blur-sm group hover:bg-white/60 transition-all">
-            <div className="relative w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 border-2 border-black/80 shadow-md">
+            <div className="relative w-28 h-28 rounded-full overflow-hidden flex-shrink-0 border-2 border-black/80 shadow-md">
               <Image
                 src={getPersonImage(person.image)}
                 alt={person.name}
                 fill
-                className="object-cover"
+                className="object-cover rounded-full"
                 unoptimized
               />
             </div>
@@ -1471,6 +1563,9 @@ export const DropboxView = ({ setView, isEditMode, setIsEditMode }: { setView: (
   const builderData = useContext(BuilderContext);
   const companyName = builderData?.companyName?.trim() ? builderData.companyName.trim() : "-";
   const [loading, setLoading] = React.useState(false);
+  const [images, setImages] = React.useState<File[]>([]);
+  const [previews, setPreviews] = React.useState<string[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [form, setForm] = React.useState({
     name: '',
     mobile: '',
@@ -1478,6 +1573,20 @@ export const DropboxView = ({ setView, isEditMode, setIsEditMode }: { setView: (
     companyName: '',
     message: ''
   });
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    
+    setImages(prev => [...prev, ...files]);
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setPreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
 
   const goBack = () => {
     if (isEditMode) {
@@ -1489,34 +1598,39 @@ export const DropboxView = ({ setView, isEditMode, setIsEditMode }: { setView: (
   };
 
   const handleSubmit = async () => {
-    if (!form.name || !form.mobile || !form.message) {
-      toast.error("Please fill Name, Mobile and Mention Changes");
+    if (!form.name || !form.mobile) {
+      toast.error("Please fill Name and Mobile");
       return;
     }
 
     try {
       setLoading(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+      
+      const formData = new FormData();
+      formData.append('builderId', builderData?._id || '');
+      formData.append('cardType', companyName);
+      formData.append('name', form.name);
+      formData.append('number', form.mobile);
+      formData.append('email', form.email);
+      formData.append('companyName', form.companyName);
+      formData.append('message', form.message || "Replace Images Request");
+      
+      images.forEach((image) => {
+        formData.append('images', image);
+      });
+
       const response = await fetch(`${apiUrl}/dropbox`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          builderId: builderData?._id,
-          cardType: companyName,
-          name: form.name,
-          number: form.mobile,
-          email: form.email,
-          companyName: form.companyName,
-          message: form.message
-        })
+        body: formData
       });
 
       const result = await response.json();
       if (result.status === "Success") {
         toast.success("Request submitted to Dropbox successfully!");
         setForm({ name: '', mobile: '', email: '', companyName: '', message: '' });
+        setImages([]);
+        setPreviews([]);
         goBack();
       } else {
         toast.error(result.message || "Failed to submit request");
@@ -1539,61 +1653,73 @@ export const DropboxView = ({ setView, isEditMode, setIsEditMode }: { setView: (
         <div className="w-6" />
       </div>
       <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Name :</span>
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs font-bold text-gray-700 ml-1">Name :</span>
           <input 
             type="text" 
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" 
+            className="w-full bg-white rounded-full py-2.5 px-4 text-sm border border-gray-200 outline-none shadow-sm" 
             placeholder="Enter your name"
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Mobile :</span>
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs font-bold text-gray-700 ml-1">Mobile :</span>
           <input 
             type="text" 
             value={form.mobile}
             onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-            className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" 
+            className="w-full bg-white rounded-full py-2.5 px-4 text-sm border border-gray-200 outline-none shadow-sm" 
             placeholder="Enter mobile number"
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Email :</span>
+        <div className="flex flex-col space-y-1">
+          <span className="text-xs font-bold text-gray-700 ml-1">Email :</span>
           <input 
             type="email" 
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="flex-1 bg-white rounded-full py-1.5 px-4 text-sm border border-gray-200 outline-none" 
+            className="w-full bg-white rounded-full py-2.5 px-4 text-sm border border-gray-200 outline-none shadow-sm" 
             placeholder="Enter email address"
           />
         </div>
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-700 ml-1">Company Name</label>
-          <input 
-            type="text" 
-            value={form.companyName}
-            onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-            className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none" 
-            placeholder="Enter your company name"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-700 ml-1">Mention Changes</label>
-          <textarea 
-            value={form.message}
-            onChange={(e) => setForm({ ...form, message: e.target.value })}
-            className="w-full bg-white rounded-xl py-2 px-4 text-sm border border-gray-200 outline-none h-24 resize-none" 
-            placeholder="Describe the changes you want..."
-          />
+
+        <div className="space-y-2 pt-2">
+          <p className="text-sm font-bold text-center text-gray-800">Replace Images</p>
+          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {previews.map((preview, index) => (
+              <div key={index} className="relative flex-shrink-0 w-24 h-24 rounded-xl border-2 border-white shadow-md overflow-hidden bg-gray-100 group">
+                <img src={preview} className="w-full h-full object-cover" alt={`preview-${index}`} />
+                <button 
+                  onClick={() => removeImage(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-shrink-0 w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-white/50 hover:bg-white transition-all group"
+            >
+              <Plus size={32} className="text-red-500 group-hover:scale-110 transition-transform" strokeWidth={3} />
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImageSelect} 
+              multiple 
+              accept="image/*" 
+              className="hidden" 
+            />
+          </div>
         </div>
         
         <p className="text-[10px] text-gray-600 text-center pt-2 italic">updates as soon as possible from my side, <span className="font-bold">Thanks</span></p>
         <button 
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-[#003B46] text-white py-3 rounded-xl font-bold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="w-full bg-[#003B46] text-white py-3.5 rounded-xl font-black shadow-lg shadow-[#003B46]/20 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 uppercase tracking-widest text-sm"
         >
           {loading ? "Submitting..." : "Submit"}
         </button>
@@ -1682,7 +1808,7 @@ export const PopupView = ({ setView }: ViewProps) => {
   );
 };
 
-export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v: View) => void; adTab?: 'Upcoming' | 'Running' | 'Completed' }) => {
+export const AdvertisementView = ({ setView, adTab = 'Advertisement' }: { setView: (v: View) => void; adTab?: 'Advertisement' | 'Running' | 'Upcoming' }) => {
   const builderData = useContext(BuilderContext);
   const [ads, setAds] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -1701,7 +1827,12 @@ export const AdvertisementView = ({ setView, adTab = 'Upcoming' }: { setView: (v
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/advertisement/user/${userId}`);
         const result = await response.json();
         if (result.status === "Success") {
-          setAds(result.data);
+          // Normalize categories: change "Upcoming" to "Advertisement", and "Completed" to "Upcoming"
+          const normalizedAds = result.data.map((ad: any) => ({
+            ...ad,
+            type: ad.type === "Upcoming" ? "Advertisement" : ad.type === "Completed" ? "Upcoming" : ad.type
+          }));
+          setAds(normalizedAds);
         }
       } catch (error) {
         console.error("Failed to fetch ads:", error);

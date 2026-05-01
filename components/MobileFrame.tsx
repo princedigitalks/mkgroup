@@ -21,7 +21,7 @@ type View =
   | 'popup';
 
 interface MobileFrameProps {
-  children: (adTab?: 'Upcoming' | 'Running' | 'Completed') => React.ReactNode;
+  children: (adTab?: 'Advertisement' | 'Running' | 'Upcoming') => React.ReactNode;
   currentView: View;
   setView: (v: View) => void;
   setStartFromHome?: (v: boolean) => void;
@@ -50,7 +50,7 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome, 
   const isAdvertisement = currentView === 'advertisement';
   const isSubView = !isHome && !isDashboard && !isPopup;
   const isMobile = useIsMobile();
-  const [adTab, setAdTab] = React.useState<'Upcoming' | 'Running' | 'Completed'>('Upcoming');
+  const [adTab, setAdTab] = React.useState<'Advertisement' | 'Running' | 'Upcoming'>('Advertisement');
   const builderData = useContext(BuilderContext);
 
   const handleShare = async () => {
@@ -159,7 +159,7 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome, 
                 </div>
               ) : (
                 <div className="flex flex-1 justify-around ml-2 z-10">
-                  {(['Upcoming', 'Running', 'Completed'] as const).map((tab) => (
+                  {(['Advertisement', 'Running', 'Upcoming'] as const).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setAdTab(tab)}

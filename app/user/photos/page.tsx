@@ -10,7 +10,7 @@ import api from "@/lib/axios";
 
 interface GalleryImage {
   _id: string;
-  category: "General" | "Awarded";
+  category: "Impressive" | "Awarded";
   image: string;
   title?: string;
 }
@@ -26,7 +26,7 @@ export default function PhotosPage() {
   const [photos, setPhotos] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"General" | "Awarded">("General");
+  const [activeTab, setActiveTab] = useState<"Impressive" | "Awarded">("Impressive");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
   // New Upload State
@@ -142,10 +142,10 @@ export default function PhotosPage() {
           
           <div className="flex items-center gap-2 bg-gray-100 p-1.5 rounded-xl">
             <button 
-              onClick={() => setActiveTab("General")}
-              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === "General" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              onClick={() => setActiveTab("Impressive")}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === "Impressive" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
-              <Grid size={14} /> GENERAL
+              <Grid size={14} /> IMPRESSIVE
             </button>
             <button 
               onClick={() => setActiveTab("Awarded")}

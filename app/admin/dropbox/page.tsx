@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Trash2, Search, Download, Filter, Loader2 } from "lucide-react";
+import { Trash2, Search, Download, Filter, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import api from "@/lib/axios";
 
 export default function DropboxPage() {
   const [dropboxData, setDropboxData] = useState<any[]>([]);
@@ -13,12 +14,10 @@ export default function DropboxPage() {
   const fetchDropbox = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
-      const response = await fetch(`${apiUrl}/dropbox`);
-      const result = await response.json();
-      if (result.status === "Success") {
-        setDropboxData(result.data);
-      }
+      const response = await api.get("/dropbox");
+       if (response.data.status === "Success") {
+         setDropboxData(response.data.data);
+       }
     } catch (error) {
       toast.error("Failed to fetch dropbox data");
     } finally {
@@ -33,16 +32,20 @@ export default function DropboxPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this record?")) return;
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
-      const response = await fetch(`${apiUrl}/dropbox/${id}`, { method: 'DELETE' });
-      const result = await response.json();
-      if (result.status === "Success") {
+      const response = await api.delete(`/dropbox/${id}`);
+      if (response.data.status === "Success") {
         toast.success("Record deleted successfully");
         setDropboxData(prev => prev.filter(item => item._id !== id));
       }
     } catch (error) {
       toast.error("Failed to delete record");
     }
+  };
+
+  const getImageUrl = (imageName: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/v1/api";
+    const baseUrl = apiUrl.split("/v1/api")[0];
+    return `${baseUrl}/builder/${imageName}`;
   };
 
   const filteredData = dropboxData.filter(item => 
@@ -96,6 +99,7 @@ export default function DropboxPage() {
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider border-r border-gray-700">Number</th>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider border-r border-gray-700">Email</th>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider border-r border-gray-700">Message</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider border-r border-gray-700">Images</th>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider border-r border-gray-700">Timestamp</th>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-center">Delete</th>
                   </tr>
@@ -116,6 +120,23 @@ export default function DropboxPage() {
                         <td className="px-4 py-4 border-r border-gray-100 text-gray-500 text-xs">{row.number}</td>
                         <td className="px-4 py-4 border-r border-gray-100 text-gray-400 text-xs">{row.email || "-"}</td>
                         <td className="px-4 py-4 border-r border-gray-100 text-gray-600 text-xs leading-relaxed max-w-xs">{row.message}</td>
+                        <td className="px-4 py-4 border-r border-gray-100">
+                          <div className="flex flex-wrap gap-1 max-w-[120px]">
+                            {row.images && row.images.length > 0 ? row.images.map((img: string, i: number) => (
+                              <a 
+                                key={i} 
+                                href={getImageUrl(img)} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="w-8 h-8 rounded border border-gray-200 overflow-hidden hover:scale-110 transition-transform flex-shrink-0 bg-gray-50"
+                              >
+                                <img src={getImageUrl(img)} className="w-full h-full object-cover" alt="" />
+                              </a>
+                            )) : (
+                              <span className="text-gray-300 italic text-[10px]">No images</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-4 border-r border-gray-100 text-gray-400 text-xs whitespace-nowrap">
                           {new Date(row.createdAt).toLocaleString()}
                         </td>

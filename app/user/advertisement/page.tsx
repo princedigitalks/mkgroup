@@ -10,7 +10,7 @@ import api from "@/lib/axios";
 
 interface Advertisement {
   _id: string;
-  type: "Upcoming" | "Running" | "Completed";
+  type: "Advertisement" | "Running" | "Upcoming";
   image: string;
   note?: string;
 }
@@ -26,7 +26,7 @@ export default function AdvertisementPage() {
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"Upcoming" | "Running" | "Completed">("Upcoming");
+  const [activeTab, setActiveTab] = useState<"Advertisement" | "Running" | "Upcoming">("Advertisement");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
   // New Upload State
@@ -139,18 +139,18 @@ export default function AdvertisementPage() {
 
   const getStatusIcon = (type: string) => {
     switch (type) {
-      case "Upcoming": return <Clock size={14} />;
+      case "Advertisement": return <Megaphone size={14} />;
       case "Running": return <PlayCircle size={14} />;
-      case "Completed": return <CheckCircle2 size={14} />;
+      case "Upcoming": return <Clock size={14} />;
       default: return null;
     }
   };
 
   const getStatusColor = (type: string) => {
     switch (type) {
-      case "Upcoming": return "bg-purple-500";
+      case "Advertisement": return "bg-purple-500";
       case "Running": return "bg-blue-500";
-      case "Completed": return "bg-emerald-500";
+      case "Upcoming": return "bg-emerald-500";
       default: return "bg-gray-500";
     }
   };
@@ -166,7 +166,7 @@ export default function AdvertisementPage() {
           </div>
           
           <div className="flex items-center gap-2 bg-gray-100 p-1.5 rounded-xl">
-            {(["Upcoming", "Running", "Completed"] as const).map((tab) => (
+            {(["Advertisement", "Running", "Upcoming"] as const).map((tab) => (
                <button 
                key={tab}
                onClick={() => setActiveTab(tab)}
@@ -263,10 +263,10 @@ export default function AdvertisementPage() {
                   {/* Overlay Controls */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto pointer-events-none">
                     <div className="flex gap-2">
-                      {ad.type !== "Completed" && (
+                      {ad.type !== "Upcoming" && (
                           <button
-                          title={`Move to ${ad.type === "Upcoming" ? "Running" : "Completed"}`}
-                          onClick={() => handleUpdateStatus(ad._id, ad.type === "Upcoming" ? "Running" : "Completed")}
+                          title={`Move to ${ad.type === "Advertisement" ? "Running" : "Upcoming"}`}
+                          onClick={() => handleUpdateStatus(ad._id, ad.type === "Advertisement" ? "Running" : "Upcoming")}
                           className="h-8 w-8 bg-white text-gray-900 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all shadow-lg"
                           >
                           <ArrowRight size={16} />

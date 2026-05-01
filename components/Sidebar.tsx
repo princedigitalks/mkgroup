@@ -21,7 +21,8 @@ import {
   MessageSquare,
   Megaphone,
   Monitor,
-  ChevronDown
+  ChevronDown,
+  Phone
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { logout } from "@/lib/redux/slices/authSlice";
@@ -45,6 +46,7 @@ export default function Sidebar({ type }: SidebarProps) {
 
   const adminLinks = [
     { label: "Card Maker", href: "/admin", icon: CreditCard },
+    { label: "NFC Inquiry", href: "/admin/nfc-inquiry", icon: Phone },
     { label: "Dropbox", href: "/admin/dropbox", icon: Database },
     { 
       label: "SEBA Directory", 
