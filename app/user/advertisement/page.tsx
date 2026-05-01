@@ -15,6 +15,8 @@ interface Advertisement {
   note?: string;
 }
 
+
+
 interface PreviewFile {
   file: File;
   preview: string;
