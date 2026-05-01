@@ -4,10 +4,12 @@ import DashboardLayout from "@/components/DashboardLayout";
 import CommonTable from "@/components/CommonTable";
 import { Plus, Users, Trash2, Check, X, FileText, Phone, MapPin, Building2, Briefcase, Globe, Download } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import SearchableSelect from "@/components/SearchableSelect";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 
 import Cropper, { Area } from 'react-easy-crop';
+import { jsPDF } from "jspdf";
 
 const getCroppedImg = (
   imageSrc: string,
@@ -57,9 +59,13 @@ export default function SebaMembersPage() {
     name: "", category: "", area: "", company: "",
     mobile: "", address: "", emailWebsite: "", position: "",
     officeNo: "", 
-    image: null as File | null,
-    pdf: null as File | null
+    image: null as File | null
   });
+
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categorySelection, setCategorySelection] = useState("");
+  const [showOtherCategory, setShowOtherCategory] = useState(false);
+  const [otherCategoryName, setOtherCategoryName] = useState("");
 
   // Cropper states
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -116,6 +122,13 @@ export default function SebaMembersPage() {
 
   useEffect(() => {
     fetchMembers();
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get('/seba/category');
+        if (data.status === 'Success') setCategories(data.data);
+      } catch (err) {}
+    };
+    fetchCategories();
   }, [filterStatus]);
 
   const handleCreate = async (e: FormEvent) => {
@@ -138,8 +151,11 @@ export default function SebaMembersPage() {
         setFormData({
           name: "", category: "", area: "", company: "",
           mobile: "", address: "", emailWebsite: "", position: "",
-          officeNo: "", image: null, pdf: null
+          officeNo: "", image: null
         });
+        setCategorySelection("");
+        setShowOtherCategory(false);
+        setOtherCategoryName("");
         setIsDrawerOpen(false);
         fetchMembers();
       }
@@ -173,6 +189,111 @@ export default function SebaMembersPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to delete");
     }
+  };
+  
+  const handleDownloadPDF = async (member: any) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // 1. Decorative Sidebar
+    doc.setFillColor(11, 75, 75); 
+    doc.rect(0, 0, 15, pageHeight, 'F');
+    
+    // 2. Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(28);
+    doc.setTextColor(11, 75, 75);
+    doc.text("SEBA", 25, 25);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont("helvetica", "italic");
+    doc.text("Surat East Builder Association", 25, 32);
+    
+    doc.setDrawColor(11, 75, 75);
+    doc.setLineWidth(0.5);
+    doc.line(25, 38, 190, 38);
+
+    // 3. Document Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(50, 50, 50);
+    doc.text("MEMBER PROFILE SUMMARY", 25, 52);
+
+    // 4. Member Photo
+    if (member.image) {
+      try {
+        const imageUrl = `${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${member.image}`;
+        const res = await fetch(imageUrl);
+        const blob = await res.blob();
+        const base64: any = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+        
+        // Shadow effect for photo
+        doc.setFillColor(240, 240, 240);
+        doc.rect(152, 47, 40, 50, 'F');
+        
+        doc.addImage(base64, 'JPEG', 150, 45, 40, 50);
+        doc.setDrawColor(11, 75, 75);
+        doc.setLineWidth(0.8);
+        doc.rect(150, 45, 40, 50);
+      } catch (e) {
+        console.error("PDF Photo add failed", e);
+      }
+    }
+    
+    const fields = [
+      { label: "FULL NAME", value: member.name },
+      { label: "DESIGNATION", value: member.position || "Member" },
+      { label: "BUSINESS CATEGORY", value: member.category },
+      { label: "PRIMARY MOBILE", value: member.mobile },
+      { label: "OFFICE NUMBER", value: member.officeNo || "N/A" },
+      { label: "OPERATIONAL AREA", value: member.area },
+      { label: "OFFICE ADDRESS", value: member.address || "N/A" },
+      { label: "EMAIL / WEBSITE", value: member.emailWebsite || "N/A" },
+    ];
+
+    let y = 70;
+    fields.forEach((field, index) => {
+      if (index % 2 === 0) {
+        doc.setFillColor(245, 248, 248);
+        doc.rect(25, y - 6, 115, 12, 'F');
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(11, 75, 75);
+      doc.text(field.label, 30, y);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      
+      const val = field.value?.toString() || "N/A";
+      const splitText = doc.splitTextToSize(val, 80);
+      doc.text(splitText, 30, y + 6);
+      
+      y += (splitText.length * 6) + 12;
+    });
+
+    // 6. Footer
+    doc.setFillColor(11, 75, 75);
+    doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text("CONFIDENTIAL ADMIN RECORD", pageWidth / 2, pageHeight - 12, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
+
+    doc.save(`${member.name}_SEBA_Profile.pdf`);
   };
 
   const stats = {
@@ -228,18 +349,12 @@ export default function SebaMembersPage() {
       header: "Application Form", accessor: "pdf",
       render: (row: any) => (
         <div>
-          {row.pdf ? (
-            <a 
-              href={`${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${row.pdf}`} 
-              target="_blank" 
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-indigo-100 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all cursor-pointer shadow-sm"
-            >
-              <Download size={13} /> View PDF
-            </a>
-          ) : (
-            <span className="text-xs text-gray-400">No PDF</span>
-          )}
+          <button 
+            onClick={() => handleDownloadPDF(row)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-indigo-100 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all cursor-pointer shadow-sm"
+          >
+            <Download size={13} /> Download PDF
+          </button>
         </div>
       )
     },
@@ -390,7 +505,28 @@ export default function SebaMembersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className={labelCls}>Category *</label>
-                      <input required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className={inputCls} placeholder="e.g. Builder" />
+                      <SearchableSelect 
+                        options={categories}
+                        value={categorySelection}
+                        onChange={(val) => {
+                          setCategorySelection(val);
+                          setShowOtherCategory(val === 'Others');
+                          if (val !== 'Others') setFormData({ ...formData, category: val });
+                        }}
+                        placeholder="Select Category"
+                      />
+                      {showOtherCategory && (
+                        <input 
+                          required 
+                          className={`${inputCls} mt-2`} 
+                          placeholder="Write category name" 
+                          value={otherCategoryName}
+                          onChange={(e) => {
+                            setOtherCategoryName(e.target.value);
+                            setFormData({ ...formData, category: e.target.value });
+                          }}
+                        />
+                      )}
                     </div>
                     <div>
                       <label className={labelCls}>Area *</label>
@@ -428,10 +564,6 @@ export default function SebaMembersPage() {
                     <div>
                       <label className={labelCls}>Passport Photo</label>
                       <input type="file" accept="image/*" onChange={handleImageSelect} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all border border-gray-200 px-3 py-2.5 rounded-lg bg-white shadow-sm" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Application (PDF)</label>
-                      <input type="file" accept="application/pdf" onChange={(e) => setFormData({ ...formData, pdf: e.target.files?.[0] || null })} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all border border-gray-200 px-3 py-2.5 rounded-lg bg-white shadow-sm" />
                     </div>
                   </div>
                 </div>

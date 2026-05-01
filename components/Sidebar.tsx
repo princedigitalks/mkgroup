@@ -56,6 +56,8 @@ export default function Sidebar({ type }: SidebarProps) {
       subLinks: [
         { label: "Seba Associated", href: "/admin/seba-associated" },
         { label: "Seba Members", href: "/admin/seba-members" },
+        { label: "Seba Sponsors", href: "/admin/seba-sponsors" },
+        { label: "Business Categories", href: "/admin/seba-categories" },
       ]
     },
     { label: "Logout", action: handleLogout, icon: LogOut, color: "text-red-500 hover:bg-red-50" },
