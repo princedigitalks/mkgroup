@@ -56,9 +56,9 @@ export default function SebaMembersPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "", category: "", area: "", company: "",
+    name: "", category: "", company: "",
     mobile: "", address: "", emailWebsite: "", position: "",
-    officeNo: "", 
+    officeNo: "", area: "", pincode: "", city: "Surat", state: "Gujarat",
     image: null as File | null
   });
 
@@ -149,7 +149,7 @@ export default function SebaMembersPage() {
       if (response.data.status === "Success") {
         toast.success("Created successfully!");
         setFormData({
-          name: "", category: "", area: "", company: "",
+          name: "", category: "", company: "",
           mobile: "", address: "", emailWebsite: "", position: "",
           officeNo: "", image: null
         });
@@ -528,10 +528,7 @@ export default function SebaMembersPage() {
                         />
                       )}
                     </div>
-                    <div>
-                      <label className={labelCls}>Area *</label>
-                      <input required value={formData.area} onChange={(e) => setFormData({ ...formData, area: e.target.value })} className={inputCls} placeholder="e.g. Adajan / Surat" />
-                    </div>
+                      {/* Area will be auto-filled by Map API */}
                   </div>
 
                   <div>
@@ -556,8 +553,82 @@ export default function SebaMembersPage() {
                   </div>
 
                   <div>
-                    <label className={labelCls}>Office Address</label>
-                    <textarea value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={`${inputCls} h-[80px] py-2 resize-none`} placeholder="Full physical address" />
+                    <label className={labelCls}>Pincode (Auto-fills below)</label>
+                    <input 
+                      maxLength={6}
+                      value={formData.pincode} 
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setFormData({ ...formData, pincode: val });
+                        if (val.length === 6) {
+                          fetch(`https://api.postalpincode.in/pincode/${val}`)
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data[0].Status === "Success") {
+                                const post = data[0].PostOffice[0];
+                                setFormData(prev => ({
+                                  ...prev,
+                                  pincode: val,
+                                  city: post.District,
+                                  state: post.State,
+                                  area: post.Name
+                                }));
+                              }
+                            });
+                        }
+                      }} 
+                      className={inputCls} 
+                      placeholder="395xxx" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelCls}>Area / Locality *</label>
+                    <input 
+                      required 
+                      value={formData.area} 
+                      onChange={(e) => setFormData({ ...formData, area: e.target.value })} 
+                      className={inputCls} 
+                      placeholder="e.g. Adajan / Surat" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelCls}>Office Address *</label>
+                    <textarea 
+                      value={formData.address} 
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })} 
+                      className={`${inputCls} h-[80px] py-2 resize-none`} 
+                      placeholder="Full physical address" 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelCls}>City</label>
+                      <select 
+                        value={formData.city} 
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
+                        className={inputCls}
+                      >
+                        <option value="Surat">Surat</option>
+                        <option value="Ahmedabad">Ahmedabad</option>
+                        <option value="Vadodara">Vadodara</option>
+                        <option value="Mumbai">Mumbai</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelCls}>State</label>
+                      <select 
+                        value={formData.state} 
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })} 
+                        className={inputCls}
+                      >
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4">
