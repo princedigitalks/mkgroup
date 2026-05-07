@@ -54,6 +54,8 @@ export default function SebaMembersPage() {
   const [loading, setLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "", category: "", company: "",
@@ -131,7 +133,7 @@ export default function SebaMembersPage() {
     fetchCategories();
   }, [filterStatus]);
 
-  const handleCreate = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -141,29 +143,69 @@ export default function SebaMembersPage() {
           form.append(key, formData[key as keyof typeof formData] as any);
         }
       });
-      form.append("status", "active"); // Admin creates as active directly
 
-      const response = await api.post('/seba/member', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      if (response.data.status === "Success") {
-        toast.success("Created successfully!");
-        setFormData({
-          name: "", category: "", company: "",
-          mobile: "", address: "", emailWebsite: "", position: "",
-          officeNo: "", image: null
+      if (isEditing && editingId) {
+        const response = await api.put(`/seba/member/${editingId}`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
-        setCategorySelection("");
-        setShowOtherCategory(false);
-        setOtherCategoryName("");
-        setIsDrawerOpen(false);
-        fetchMembers();
+        if (response.data.status === "Success") {
+          toast.success("Updated successfully!");
+          closeDrawer();
+          fetchMembers();
+        }
+      } else {
+        form.append("status", "active"); // Admin creates as active directly
+        const response = await api.post('/seba/member', form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (response.data.status === "Success") {
+          toast.success("Created successfully!");
+          closeDrawer();
+          fetchMembers();
+        }
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create");
+      toast.error(err.response?.data?.message || "Failed to save");
     } finally {
       setLoading(false);
     }
+  };
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+    setIsEditing(false);
+    setEditingId(null);
+    setFormData({
+      name: "", category: "", company: "",
+      mobile: "", address: "", emailWebsite: "", position: "",
+      officeNo: "", area: "", pincode: "", city: "Surat", state: "Gujarat",
+      image: null
+    });
+    setCategorySelection("");
+    setShowOtherCategory(false);
+    setOtherCategoryName("");
+  };
+
+  const handleEdit = (member: any) => {
+    setIsEditing(true);
+    setEditingId(member._id);
+    setFormData({
+      name: member.name,
+      category: member.category,
+      company: member.company || "",
+      mobile: member.mobile,
+      address: member.address || "",
+      emailWebsite: member.emailWebsite || "",
+      position: member.position || "",
+      officeNo: member.officeNo || "",
+      area: member.area || "",
+      pincode: member.pincode || "",
+      city: member.city || "Surat",
+      state: member.state || "Gujarat",
+      image: null
+    });
+    setCategorySelection(member.category);
+    setIsDrawerOpen(true);
   };
 
   const handleUpdateStatus = async (id: string, status: string) => {
@@ -379,6 +421,15 @@ export default function SebaMembersPage() {
       header: "Actions", accessor: "_id",
       render: (row: any) => (
         <div className="flex items-center gap-2">
+          {/* Edit Button */}
+          <button 
+            onClick={() => handleEdit(row)} 
+            title="Edit Details" 
+            className="p-2 text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 rounded-xl transition-all shadow-sm"
+          >
+            <FileText size={16} className="stroke-[2.5]" />
+          </button>
+
           {row.status !== "active" && (
             <button 
               onClick={() => handleUpdateStatus(row._id, 'active')} 
@@ -479,17 +530,19 @@ export default function SebaMembersPage() {
                   <div className="h-9 w-9 bg-gray-900 rounded-xl flex items-center justify-center shadow">
                     <Users size={16} className="text-white" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Add SEBA Member</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">
+                    {isEditing ? "Edit SEBA Member" : "Add SEBA Member"}
+                  </h3>
                 </div>
                 <button 
-                  onClick={() => setIsDrawerOpen(false)} 
+                  onClick={closeDrawer} 
                   className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-900 rounded-lg transition-colors"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <form onSubmit={handleCreate} className="flex-1 flex flex-col justify-between space-y-6">
+              <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between space-y-6">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -606,28 +659,21 @@ export default function SebaMembersPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className={labelCls}>City</label>
-                      <select 
+                      <input 
                         value={formData.city} 
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })} 
                         className={inputCls}
-                      >
-                        <option value="Surat">Surat</option>
-                        <option value="Ahmedabad">Ahmedabad</option>
-                        <option value="Vadodara">Vadodara</option>
-                        <option value="Mumbai">Mumbai</option>
-                      </select>
+                        placeholder="City"
+                      />
                     </div>
                     <div>
                       <label className={labelCls}>State</label>
-                      <select 
+                      <input 
                         value={formData.state} 
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })} 
                         className={inputCls}
-                      >
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                      </select>
+                        placeholder="State"
+                      />
                     </div>
                   </div>
 
@@ -642,7 +688,7 @@ export default function SebaMembersPage() {
                 <div className="border-t pt-4 flex gap-3 justify-end">
                   <button 
                     type="button" 
-                    onClick={() => setIsDrawerOpen(false)} 
+                    onClick={closeDrawer} 
                     className="px-4 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all"
                   >
                     Cancel
@@ -652,7 +698,7 @@ export default function SebaMembersPage() {
                     disabled={loading} 
                     className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5 text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md disabled:opacity-60"
                   >
-                    {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Plus size={16} className="stroke-[2.5]" /> Create Member</>}
+                    {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>{isEditing ? "Update Details" : <><Plus size={16} className="stroke-[2.5]" /> Create Member</>}</>}
                   </button>
                 </div>
               </form>
