@@ -56,35 +56,30 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome, 
   const handleShare = async () => {
     if (typeof window === 'undefined') return;
 
-    const profileUrl = builderData?.website
-      ? builderData.website.startsWith('http')
-        ? builderData.website
-        : `https://${builderData.website}`
-      : window.location.href;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const publicProfileUrl = `${appUrl}/card/${builderData?._id}`;
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/v1/api';
     const baseUrl = apiUrl.split('/v1/api')[0];
+    
+    // Priority: Profile Image > Logo
     const imageUrl = builderData?.profileImage
       ? `${baseUrl}/builder/${builderData.profileImage}`
       : builderData?.logo
         ? `${baseUrl}/builder/${builderData.logo}`
         : '';
 
-    const shareLines = [
-      builderData?.companyName || 'MK GROUP',
-      builderData?.name,
-      builderData?.location,
-      builderData?.timing ? `Timing: ${builderData.timing}` : undefined,
-      imageUrl ? `Image: ${imageUrl}` : undefined,
-      `Profile: ${profileUrl}`,
-      'Open this profile now!'
-    ].filter(Boolean);
+    const shareText = `${publicProfileUrl}\n\n` +
+      `*${builderData?.companyName || 'MK GROUP'}*\n\n` +
+      `*Name:* ${builderData?.name || '-'}\n` +
+      `*Location:* ${builderData?.location || '-'}\n` +
+      `${builderData?.timing ? `*Timing:* ${builderData.timing}\n` : ''}` +
+      `\nOpen this digital card now!`;
 
-    const shareText = shareLines.join('\n');
     const shareData = {
       title: builderData?.companyName || 'MK GROUP',
       text: shareText,
-      url: profileUrl,
+      url: publicProfileUrl,
     };
 
     if (navigator.share) {
