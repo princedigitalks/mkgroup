@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: CardPageProps): Promise<Metad
         ? `${baseUrl}/builder/${builder.profileImage}` 
         : builder.logo 
           ? `${baseUrl}/builder/${builder.logo}` 
-          : `${appUrl}/api/og/${id}`; // Fallback to dynamic card if no profile photo
+          : `${appUrl}/api/og/${id}`; 
 
       return {
         title: title,
