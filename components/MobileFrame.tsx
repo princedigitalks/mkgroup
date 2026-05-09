@@ -69,12 +69,9 @@ export const MobileFrame = ({ children, currentView, setView, setStartFromHome, 
         ? `${baseUrl}/builder/${builderData.logo}`
         : '';
 
-    const shareText = `${publicProfileUrl}\n\n` +
-      `*${builderData?.companyName || 'MK GROUP'}*\n\n` +
-      `*Name:* ${builderData?.name || '-'}\n` +
-      `*Location:* ${builderData?.location || '-'}\n` +
-      `${builderData?.timing ? `*Timing:* ${builderData.timing}\n` : ''}` +
-      `\nOpen this digital card now!`;
+    const shareText = `*Welcome To ${builderData?.companyName || 'MK GROUP'} Digital*\n` +
+      `Welcome To ${builderData?.companyName || 'MK GROUP'} Digital | dgonline.co\ndgonline.co\n\n` +
+      `${publicProfileUrl}`;
 
     const shareData = {
       title: builderData?.companyName || 'MK GROUP',
