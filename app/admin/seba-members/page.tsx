@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useState } from "react";
 import SearchableSelect from "@/components/SearchableSelect";
 import { toast } from "sonner";
 import api from "@/lib/axios";
+import { formatPhoneNumber, cleanPhoneNumber } from "@/lib/phoneUtils";
 
 import Cropper, { Area } from 'react-easy-crop';
 import { jsPDF } from "jspdf";
@@ -59,8 +60,8 @@ export default function SebaMembersPage() {
 
   const [formData, setFormData] = useState({
     name: "", category: "", company: "",
-    mobile: "", address: "", emailWebsite: "", position: "",
-    officeNo: "", area: "", pincode: "", city: "Surat", state: "Gujarat",
+    mobile: formatPhoneNumber(""), address: "", emailWebsite: "", position: "",
+    officeNo: formatPhoneNumber(""), area: "", pincode: "", city: "Surat", state: "Gujarat",
     image: null as File | null
   });
 
@@ -140,7 +141,11 @@ export default function SebaMembersPage() {
       const form = new FormData();
       Object.keys(formData).forEach(key => {
         if (formData[key as keyof typeof formData]) {
-          form.append(key, formData[key as keyof typeof formData] as any);
+          let value = formData[key as keyof typeof formData];
+          if (key === 'mobile' || key === 'officeNo') {
+            value = cleanPhoneNumber(value as string);
+          }
+          form.append(key, value as any);
         }
       });
 
@@ -177,8 +182,8 @@ export default function SebaMembersPage() {
     setEditingId(null);
     setFormData({
       name: "", category: "", company: "",
-      mobile: "", address: "", emailWebsite: "", position: "",
-      officeNo: "", area: "", pincode: "", city: "Surat", state: "Gujarat",
+      mobile: formatPhoneNumber(""), address: "", emailWebsite: "", position: "",
+      officeNo: formatPhoneNumber(""), area: "", pincode: "", city: "Surat", state: "Gujarat",
       image: null
     });
     setCategorySelection("");
@@ -193,11 +198,11 @@ export default function SebaMembersPage() {
       name: member.name,
       category: member.category,
       company: member.company || "",
-      mobile: member.mobile,
+      mobile: formatPhoneNumber(member.mobile),
       address: member.address || "",
       emailWebsite: member.emailWebsite || "",
       position: member.position || "",
-      officeNo: member.officeNo || "",
+      officeNo: member.officeNo ? formatPhoneNumber(member.officeNo) : "",
       area: member.area || "",
       pincode: member.pincode || "",
       city: member.city || "Surat",
@@ -299,8 +304,8 @@ export default function SebaMembersPage() {
       { label: "COMPANY NAME", value: member.company },
       { label: "DESIGNATION", value: member.position || "Member" },
       { label: "BUSINESS CATEGORY", value: member.category },
-      { label: "PRIMARY MOBILE", value: member.mobile },
-      { label: "OFFICE NUMBER", value: member.officeNo },
+      { label: "PRIMARY MOBILE", value: formatPhoneNumber(member.mobile) },
+      { label: "OFFICE NUMBER", value: member.officeNo ? formatPhoneNumber(member.officeNo) : "" },
       { label: "OPERATIONAL AREA", value: member.area },
       { label: "OFFICE ADDRESS", value: member.address },
       { label: "PINCODE", value: member.pincode },
@@ -403,8 +408,8 @@ export default function SebaMembersPage() {
       header: "Contact Details", accessor: "mobile",
       render: (row: any) => (
         <div className="space-y-1 text-xs">
-          <p className="flex items-center gap-1.5 text-gray-700 font-medium"><Phone size={13} className="text-gray-400" /> {row.mobile}</p>
-          {row.officeNo && <p className="flex items-center gap-1.5 text-gray-500"><Phone size={13} className="text-gray-400" /> {row.officeNo}</p>}
+          <p className="flex items-center gap-1.5 text-gray-700 font-medium"><Phone size={13} className="text-gray-400" /> {formatPhoneNumber(row.mobile)}</p>
+          {row.officeNo && <p className="flex items-center gap-1.5 text-gray-500"><Phone size={13} className="text-gray-400" /> {formatPhoneNumber(row.officeNo)}</p>}
           {row.emailWebsite && <p className="flex items-center gap-1.5 text-blue-600 hover:underline"><Globe size={13} className="text-gray-400" /> {row.emailWebsite}</p>}
         </div>
       )
@@ -624,11 +629,11 @@ export default function SebaMembersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className={labelCls}>Mobile No. *</label>
-                      <input required value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} className={inputCls} placeholder="Primary Contact" />
+                      <input required value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: formatPhoneNumber(e.target.value) })} className={inputCls} placeholder="Primary Contact" />
                     </div>
                     <div>
                       <label className={labelCls}>Office No.</label>
-                      <input value={formData.officeNo} onChange={(e) => setFormData({ ...formData, officeNo: e.target.value })} className={inputCls} placeholder="Secondary Contact" />
+                      <input value={formData.officeNo} onChange={(e) => setFormData({ ...formData, officeNo: formatPhoneNumber(e.target.value) })} className={inputCls} placeholder="Secondary Contact" />
                     </div>
                   </div>
 
