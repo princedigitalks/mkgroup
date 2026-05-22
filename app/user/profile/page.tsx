@@ -134,15 +134,8 @@ export default function ProfilePage() {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setOriginalImage(reader.result as string);
-        setCropType("logo");
-        setShowCropper(true);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-      };
-      reader.readAsDataURL(file);
+      setSelectedLogo(file);
+      setLogoPreviewUrl(URL.createObjectURL(file));
     }
     e.target.value = "";
   };

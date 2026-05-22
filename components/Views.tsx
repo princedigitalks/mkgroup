@@ -481,18 +481,16 @@ const getProfileImage = () => {
             {companyName}
           </h1>
         </div>
-        <div className="w-full bg-[#003B46] rounded-2xl flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all shadow-xl border-2 border-white/30 h-32 overflow-hidden">
-          {logoUrl ? (
-            <div className="relative w-full h-full">
-              <Image
-                src={logoUrl}
-                alt="Logo"
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-          ) : (
+        {logoUrl ? (
+          <div className="w-full flex justify-center items-center cursor-pointer hover:opacity-95 transition-all">
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="w-full h-[32vw] sm:h-32 object-contain"
+            />
+          </div>
+        ) : (
+          <div className={`w-full bg-[#003B46] border-2 border-white/30 shadow-xl rounded-2xl flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all h-32 overflow-hidden`}>
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2">
                 <div className="w-[4px] h-6 bg-white rounded-full opacity-50" />
@@ -501,8 +499,8 @@ const getProfileImage = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="w-full flex justify-between items-center px-2 ">

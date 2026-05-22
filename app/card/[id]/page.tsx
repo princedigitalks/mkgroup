@@ -2,6 +2,8 @@ import React from 'react';
 import MKGroupApp from '@/components/MKGroupApp';
 import { Metadata } from 'next';
 
+export const dynamic = "force-dynamic";
+
 type CardPageProps = {
   params: Promise<{
     id: string;

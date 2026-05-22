@@ -2,48 +2,12 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import CommonTable from "@/components/CommonTable";
-import { Plus, LayoutDashboard, Trash2, X, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, X, Image as ImageIcon, Pencil } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import { formatPhoneNumber, cleanPhoneNumber } from "@/lib/phoneUtils";
-import Cropper, { Area } from 'react-easy-crop';
 
-const getCroppedImg = (
-  imageSrc: string,
-  pixelCrop: Area
-): Promise<Blob | null> => {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.src = imageSrc;
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return reject(null);
-
-      canvas.width = pixelCrop.width;
-      canvas.height = pixelCrop.height;
-
-      ctx.drawImage(
-        image,
-        pixelCrop.x,
-        pixelCrop.y,
-        pixelCrop.width,
-        pixelCrop.height,
-        0,
-        0,
-        pixelCrop.width,
-        pixelCrop.height
-      );
-
-      // IMPORTANT: use image/png to keep transparent background
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/png');
-    };
-    image.onerror = (error) => reject(error);
-  });
-};
 
 const inputCls = "w-full border border-gray-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg shadow-sm";
 const labelCls = "text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1.5";
@@ -52,15 +16,19 @@ export default function SebaSponsorsPage() {
   const [sponsors, setSponsors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [currentAdImage, setCurrentAdImage] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({ type: "sponsor", image: null as File | null, adImage: null as File | null, nfcNumber: "" });
+  const [formData, setFormData] = useState({ 
+    type: "sponsor", 
+    image: null as File | null, 
+    adImage: null as File | null, 
+    nfcNumber: "" 
+  });
 
-  // Cropper states
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
 
   const fetchSponsors = async () => {
     setLoading(true);
@@ -83,39 +51,38 @@ export default function SebaSponsorsPage() {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setOriginalImage(reader.result as string);
-        setShowCropper(true);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-      };
-      reader.readAsDataURL(file);
+      setFormData({ ...formData, image: file });
     }
   };
 
-  const onCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+    setIsEditing(false);
+    setEditingId(null);
+    setCurrentImage(null);
+    setCurrentAdImage(null);
+    setFormData({ type: "sponsor", image: null, adImage: null, nfcNumber: "" });
   };
 
-  const handleCrop = async () => {
-    if (!originalImage || !croppedAreaPixels) return;
-    try {
-      const blob = await getCroppedImg(originalImage, croppedAreaPixels);
-      if (blob) {
-        // use .png extension since we crop to image/png
-        const file = new File([blob], "sponsor.png", { type: "image/png" });
-        setFormData({ ...formData, image: file });
-        setShowCropper(false);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  const handleEdit = (sponsor: any) => {
+    setIsEditing(true);
+    setEditingId(sponsor._id);
+    setFormData({
+      type: sponsor.type,
+      image: null,
+      adImage: null,
+      nfcNumber: sponsor.nfcNumber ? formatPhoneNumber(sponsor.nfcNumber) : ""
+    });
+    setCurrentImage(sponsor.image);
+    setCurrentAdImage(sponsor.adImage || null);
+    setIsDrawerOpen(true);
   };
 
-  const handleCreate = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.image) {
+    if (!isEditing && !formData.image) {
       toast.error("Please upload an image");
       return;
     }
@@ -123,21 +90,32 @@ export default function SebaSponsorsPage() {
     try {
       const form = new FormData();
       form.append("type", formData.type);
-      form.append("image", formData.image);
-      if (formData.adImage) form.append("adImage", formData.adImage);
-      if (formData.nfcNumber) form.append("nfcNumber", cleanPhoneNumber(formData.nfcNumber));
+      if (formData.image) {
+        form.append("image", formData.image);
+      }
+      if (formData.adImage) {
+        form.append("adImage", formData.adImage);
+      }
+      form.append("nfcNumber", formData.nfcNumber ? cleanPhoneNumber(formData.nfcNumber) : "");
 
-      const response = await api.post('/seba/sponsor', form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      let response;
+      if (isEditing && editingId) {
+        response = await api.put(`/seba/sponsor/${editingId}`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        response = await api.post('/seba/sponsor', form, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+
       if (response.data.status === "Success") {
-        toast.success("Created successfully!");
-        setFormData({ type: "sponsor", image: null, adImage: null, nfcNumber: "" });
-        setIsDrawerOpen(false);
+        toast.success(isEditing ? "Updated successfully!" : "Created successfully!");
+        closeDrawer();
         fetchSponsors();
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create");
+      toast.error(err.response?.data?.message || "Failed to save");
     } finally {
       setLoading(false);
     }
@@ -180,8 +158,14 @@ export default function SebaSponsorsPage() {
       render: (row: any) => (
         <div className="flex items-center gap-1">
           <button
+            onClick={() => handleEdit(row)}
+            className="p-2 text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 rounded-xl transition-all shadow-sm cursor-pointer"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
             onClick={() => handleDelete(row._id)}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
           >
             <Trash2 size={16} />
           </button>
@@ -203,7 +187,7 @@ export default function SebaSponsorsPage() {
           </div>
           <button 
             onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 text-xs font-bold rounded-xl hover:bg-indigo-700 shadow-md transition-all"
+            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 text-xs font-bold rounded-xl hover:bg-indigo-700 shadow-md transition-all cursor-pointer"
           >
             <Plus size={16} className="stroke-[2.5]" /> Add Sponsor
           </button>
@@ -211,30 +195,32 @@ export default function SebaSponsorsPage() {
 
         {isDrawerOpen && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex justify-end transition-all">
-            <div className="w-[450px] bg-white h-screen max-h-screen shadow-2xl p-6 flex flex-col border-l border-gray-100 animate-slide-in">
+            <div className="w-[450px] bg-white h-screen max-h-screen shadow-2xl p-6 flex flex-col border-l border-gray-100 animate-slide-in overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-4 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 bg-gray-900 rounded-xl flex items-center justify-center">
                     <ImageIcon size={16} className="text-white" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Add New Sponsor</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">
+                    {isEditing ? "Edit Sponsor" : "Add New Sponsor"}
+                  </h3>
                 </div>
                 <button 
-                  onClick={() => setIsDrawerOpen(false)} 
+                  onClick={closeDrawer} 
                   className="p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-900 rounded-lg transition-colors"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <form onSubmit={handleCreate} className="flex-1 flex flex-col justify-between">
+              <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between">
                 <div className="space-y-4">
                   <div>
                     <label className={labelCls}>Type *</label>
                     <select 
                       required 
                       value={formData.type} 
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value, image: null })} 
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })} 
                       className={inputCls}
                     >
                       <option value="sponsor">Sponsor</option>
@@ -242,16 +228,31 @@ export default function SebaSponsorsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className={labelCls}>Image *</label>
+                    <label className={labelCls}>Image {isEditing ? "(Optional)" : "*"}</label>
                     <input 
                       type="file" 
                       accept="image/*" 
-                      required={!formData.image} 
+                      required={!isEditing && !formData.image} 
                       onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                       onChange={handleImageSelect} 
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all border border-gray-200 px-3 py-2.5 rounded-lg bg-white shadow-sm" 
                     />
-                    {formData.image && <p className="text-xs text-green-600 mt-2 font-bold">✓ Image cropped and ready</p>}
+                    {formData.image ? (
+                      <div className="mt-2">
+                        <p className="text-xs text-green-600 mb-2 font-bold">✓ Image selected</p>
+                        <p className="text-[10px] font-bold text-gray-400 mb-1">New Image Preview:</p>
+                        <div className="h-16 w-32 bg-gray-100 border border-gray-200 overflow-hidden shadow-sm rounded-lg flex items-center justify-center">
+                          <img src={URL.createObjectURL(formData.image)} className="max-h-full max-w-full object-contain" alt="Preview" />
+                        </div>
+                      </div>
+                    ) : isEditing && currentImage ? (
+                      <div className="mt-2">
+                        <p className="text-[10px] font-bold text-gray-400 mb-1">Current Image:</p>
+                        <div className="h-16 w-32 bg-gray-100 border border-gray-200 overflow-hidden shadow-sm rounded-lg flex items-center justify-center">
+                          <img src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${currentImage}`} className="max-h-full max-w-full object-contain" alt="Current" />
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                   <div>
                     <label className={labelCls}>Ad Image (Optional)</label>
@@ -265,6 +266,14 @@ export default function SebaSponsorsPage() {
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all border border-gray-200 px-3 py-2.5 rounded-lg bg-white shadow-sm" 
                     />
                     {formData.adImage && <p className="text-xs text-green-600 mt-2 font-bold">✓ Ad Image selected</p>}
+                    {isEditing && currentAdImage && !formData.adImage && (
+                      <div className="mt-2">
+                        <p className="text-[10px] font-bold text-gray-400 mb-1">Current Ad Image:</p>
+                        <div className="h-16 w-32 bg-gray-100 border border-gray-200 overflow-hidden shadow-sm rounded-lg flex items-center justify-center">
+                          <img src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/builder/${currentAdImage}`} className="max-h-full max-w-full object-contain" alt="Current Ad" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>NFC Number (Optional)</label>
@@ -278,20 +287,32 @@ export default function SebaSponsorsPage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-4 flex gap-3 justify-end">
+                <div className="border-t pt-4 mt-6 flex gap-3 justify-end">
                   <button 
                     type="button" 
-                    onClick={() => setIsDrawerOpen(false)} 
-                    className="px-4 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all"
+                    onClick={closeDrawer} 
+                    className="px-4 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
-                    disabled={loading || !formData.image} 
-                    className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5 text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md disabled:opacity-60"
+                    disabled={loading || (!isEditing && !formData.image)} 
+                    className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5 text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md disabled:opacity-60 cursor-pointer"
                   >
-                    {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Plus size={16} className="stroke-[2.5]" /> Add</>}
+                    {loading ? (
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        {isEditing ? (
+                          <>Save Changes</>
+                        ) : (
+                          <>
+                            <Plus size={16} className="stroke-[2.5]" /> Add
+                          </>
+                        )}
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
@@ -317,59 +338,7 @@ export default function SebaSponsorsPage() {
           </div>
         </div>
 
-        {showCropper && originalImage && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-sm w-full flex flex-col items-center shadow-2xl">
-              <h3 className="text-gray-900 text-sm font-extrabold uppercase tracking-wider mb-4">Adjust Image</h3>
-              
-              <div className="relative w-full h-[300px] bg-gray-900 rounded-lg overflow-hidden shadow-inner">
-                <Cropper
-                  image={originalImage}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={16 / 9}
-                  restrictPosition={false}
-                  onCropChange={setCrop}
-                  onCropComplete={onCropComplete}
-                  onZoomChange={setZoom}
-                />
-              </div>
 
-              <p className="text-[10px] text-gray-500 font-bold mt-3">Pinch or drag to crop like mobile apps</p>
-
-              <div className="w-full mt-4 flex items-center gap-3">
-                <span className="text-xs text-gray-400 font-bold">Zoom</span>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="3" 
-                  step="0.1" 
-                  value={zoom} 
-                  onChange={(e) => setZoom(parseFloat(e.target.value))} 
-                  className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                />
-                <span className="text-xs text-gray-700 font-bold w-8">{zoom.toFixed(1)}x</span>
-              </div>
-
-              <div className="flex gap-3 mt-6 w-full">
-                <button 
-                  type="button" 
-                  onClick={() => setShowCropper(false)} 
-                  className="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleCrop} 
-                  className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all shadow-md cursor-pointer"
-                >
-                  Apply Crop
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
       </div>
     </DashboardLayout>

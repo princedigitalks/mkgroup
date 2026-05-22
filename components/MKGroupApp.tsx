@@ -70,11 +70,10 @@ const GoogleTranslate = () => {
       document.body.appendChild(addScript);
     }
   }, []);
-
   return (
     <>
       <div id="google_translate_element" style={{ display: 'none' }}></div>
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .goog-te-banner-frame.skiptranslate {
           display: none !important;
         }
@@ -105,7 +104,7 @@ const GoogleTranslate = () => {
           border: none !important;
           box-shadow: none !important;
         }
-      `}</style>
+      `}} />
     </>
   );
 };

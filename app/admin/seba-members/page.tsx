@@ -9,42 +9,41 @@ import { toast } from "sonner";
 import api from "@/lib/axios";
 import { formatPhoneNumber, cleanPhoneNumber } from "@/lib/phoneUtils";
 
-import Cropper, { Area } from 'react-easy-crop';
+import ReactCrop, { centerCrop, makeAspectCrop, Crop, PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { jsPDF } from "jspdf";
 
 const getCroppedImg = (
-  imageSrc: string,
-  pixelCrop: Area
+  image: HTMLImageElement,
+  crop: PixelCrop
 ): Promise<Blob | null> => {
   return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.src = imageSrc;
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return reject(null);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return reject(null);
 
-      canvas.width = pixelCrop.width;
-      canvas.height = pixelCrop.height;
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
 
-      ctx.drawImage(
-        image,
-        pixelCrop.x,
-        pixelCrop.y,
-        pixelCrop.width,
-        pixelCrop.height,
-        0,
-        0,
-        pixelCrop.width,
-        pixelCrop.height
-      );
+    canvas.width = crop.width;
+    canvas.height = crop.height;
 
-      // IMPORTANT: use image/png to keep transparent background
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/png');
-    };
-    image.onerror = (error) => reject(error);
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+
+    // IMPORTANT: use image/png to keep transparent background
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, 'image/png');
   });
 };
 
@@ -76,9 +75,9 @@ export default function SebaMembersPage() {
   // Cropper states
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+  const [imgRef, setImgRef] = useState<HTMLImageElement | null>(null);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -87,21 +86,54 @@ export default function SebaMembersPage() {
       reader.onload = () => {
         setOriginalImage(reader.result as string);
         setShowCropper(true);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
+        setCrop(undefined);
+        setCompletedCrop(null);
+        setImgRef(null);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const onCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    setImgRef(e.currentTarget);
+
+    const aspect = 7 / 8;
+    const initialCrop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 90,
+        },
+        aspect,
+        width,
+        height
+      ),
+      width,
+      height
+    );
+
+    setCrop(initialCrop);
+
+    // Initial completed crop in pixels
+    const pixelWidth = (initialCrop.width / 100) * width;
+    const pixelHeight = (initialCrop.height / 100) * height;
+    const pixelX = (initialCrop.x / 100) * width;
+    const pixelY = (initialCrop.y / 100) * height;
+
+    setCompletedCrop({
+      unit: 'px',
+      x: pixelX,
+      y: pixelY,
+      width: pixelWidth,
+      height: pixelHeight
+    });
   };
 
   const handleCrop = async () => {
-    if (!originalImage || !croppedAreaPixels) return;
+    if (!originalImage || !completedCrop || !imgRef) return;
     try {
-      const blob = await getCroppedImg(originalImage, croppedAreaPixels);
+      const blob = await getCroppedImg(imgRef, completedCrop);
       if (blob) {
         const file = new File([blob], "passport_photo.png", { type: "image/png" });
         setFormData({ ...formData, image: file });
@@ -131,7 +163,10 @@ export default function SebaMembersPage() {
     const fetchCategories = async () => {
       try {
         const { data } = await api.get('/seba/category');
-        if (data.status === 'Success') setCategories(data.data);
+        if (data.status === 'Success') {
+          const sortedCats = [...data.data].sort((a: any, b: any) => a.name.localeCompare(b.name));
+          setCategories(sortedCats);
+        }
       } catch (err) {}
     };
     fetchCategories();
@@ -220,7 +255,8 @@ export default function SebaMembersPage() {
     setSubCategorySelection(member.subCategory || "");
     const matchedCat = categories.find(c => c.name === member.category);
     const subs = matchedCat?.subCategories || [];
-    setSubCategories(subs.map((s: string) => ({ name: s })));
+    const sortedSubs = [...subs].sort((a: string, b: string) => a.localeCompare(b));
+    setSubCategories(sortedSubs.map((s: string) => ({ name: s })));
     setIsDrawerOpen(true);
   };
 
@@ -627,7 +663,8 @@ export default function SebaMembersPage() {
                           setSubCategorySelection("");
                           const matchedCat = categories.find(c => c.name === val);
                           const subs = matchedCat?.subCategories || [];
-                          setSubCategories(subs.map((s: string) => ({ name: s })));
+                          const sortedSubs = [...subs].sort((a: string, b: string) => a.localeCompare(b));
+                          setSubCategories(sortedSubs.map((s: string) => ({ name: s })));
                           if (val !== 'Others') {
                             setFormData(prev => ({ ...prev, category: val, subCategory: "" }));
                           }
@@ -827,39 +864,26 @@ export default function SebaMembersPage() {
 
         {showCropper && originalImage && (
           <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-sm w-full flex flex-col items-center shadow-2xl">
+            <div className="bg-white rounded-2xl p-6 max-w-lg w-full flex flex-col items-center shadow-2xl">
               <h3 className="text-gray-900 text-sm font-extrabold uppercase tracking-wider mb-4">Adjust Passport Photo</h3>
               
               {/* Crop Frame */}
-              <div className="relative w-full h-[300px] bg-[linear-gradient(45deg,#f0f0f0_25%,transparent_25%),linear-gradient(-45deg,#f0f0f0_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f0f0f0_75%),linear-gradient(-45deg,transparent_75%,#f0f0f0_75%)] bg-[size:16px_16px] bg-[position:0_0,0_8px,8px_-8px,-8px_0] bg-white rounded-lg overflow-hidden shadow-inner border border-gray-100">
-                <Cropper
-                  image={originalImage}
+              <div className="relative w-full max-h-[400px] bg-gray-900 rounded-lg overflow-auto shadow-inner flex items-center justify-center p-2 border border-gray-100">
+                <ReactCrop
                   crop={crop}
-                  zoom={zoom}
-                  aspect={7 / 8}
-                  restrictPosition={false}
-                  onCropChange={setCrop}
-                  onCropComplete={onCropComplete}
-                  onZoomChange={setZoom}
-                />
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                >
+                  <img
+                    src={originalImage}
+                    onLoad={onImageLoad}
+                    className="max-h-[350px] w-auto object-contain"
+                    alt="Source"
+                  />
+                </ReactCrop>
               </div>
 
-              <p className="text-[10px] text-gray-500 font-bold mt-3">Pinch or drag to crop like mobile apps</p>
-
-              {/* Slider */}
-              <div className="w-full mt-4 flex items-center gap-3">
-                <span className="text-xs text-gray-400 font-bold">Zoom</span>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="3" 
-                  step="0.1" 
-                  value={zoom} 
-                  onChange={(e) => setZoom(parseFloat(e.target.value))} 
-                  className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                />
-                <span className="text-xs text-gray-700 font-bold w-8">{zoom.toFixed(1)}x</span>
-              </div>
+              <p className="text-[10px] text-gray-500 font-bold mt-3">Drag corners to resize the frame, or drag inside to position it.</p>
 
               {/* Actions */}
               <div className="flex gap-3 mt-6 w-full">

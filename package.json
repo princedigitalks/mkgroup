@@ -27,6 +27,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-easy-crop": "^5.5.7",
+    "react-image-crop": "^11.0.10",
     "react-quill-new": "^3.8.3",
     "react-redux": "^9.2.0",
     "sonner": "^2.0.7",
