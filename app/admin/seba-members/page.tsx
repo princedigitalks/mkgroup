@@ -58,6 +58,11 @@ export default function SebaMembersPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, inactive: 0 });
+
   const [formData, setFormData] = useState({
     name: "", category: "", subCategory: "", company: "",
     mobile: formatPhoneNumber(""), address: "", emailWebsite: "", position: "",
@@ -144,12 +149,34 @@ export default function SebaMembersPage() {
     }
   };
 
-  const fetchMembers = async () => {
+  const fetchMembers = async (page = 1, search = "") => {
     setLoading(true);
     try {
-      const { data } = await api.get(`/seba/member${filterStatus ? `?status=${filterStatus}` : ''}`);
+      let url = `/seba/member?page=${page}&limit=10`;
+      if (filterStatus) url += `&status=${filterStatus}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      
+      const { data } = await api.get(url);
       if (data.status === "Success") {
-        setMembers(data.data);
+        if (data.total !== undefined) {
+          setMembers(data.data);
+          setTotalRecords(data.total);
+          setCurrentPage(data.page);
+          if (data.stats) {
+            setStats(data.stats);
+          }
+        } else {
+          setMembers(data.data);
+          setTotalRecords(data.data.length);
+          setCurrentPage(1);
+          const localStats = {
+            total: data.data.length,
+            active: data.data.filter((m: any) => m.status === "active").length,
+            pending: data.data.filter((m: any) => m.status === "pending").length,
+            inactive: data.data.filter((m: any) => m.status === "inactive" || m.status === "rejected").length,
+          };
+          setStats(localStats);
+        }
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to fetch Members");
@@ -159,7 +186,13 @@ export default function SebaMembersPage() {
   };
 
   useEffect(() => {
-    fetchMembers();
+    const timer = setTimeout(() => {
+      fetchMembers(1, searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, filterStatus]);
+
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const { data } = await api.get('/seba/category');
@@ -170,7 +203,7 @@ export default function SebaMembersPage() {
       } catch (err) {}
     };
     fetchCategories();
-  }, [filterStatus]);
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -194,7 +227,7 @@ export default function SebaMembersPage() {
         if (response.data.status === "Success") {
           toast.success("Updated successfully!");
           closeDrawer();
-          fetchMembers();
+          fetchMembers(currentPage, searchQuery);
         }
       } else {
         form.append("status", "active"); // Admin creates as active directly
@@ -204,7 +237,7 @@ export default function SebaMembersPage() {
         if (response.data.status === "Success") {
           toast.success("Created successfully!");
           closeDrawer();
-          fetchMembers();
+          fetchMembers(1, searchQuery);
         }
       }
     } catch (err: any) {
@@ -265,7 +298,7 @@ export default function SebaMembersPage() {
       const response = await api.put(`/seba/member/${id}/status`, { status });
       if (response.data.status === "Success") {
         toast.success(`Marked as ${status}`);
-        fetchMembers();
+        fetchMembers(currentPage, searchQuery);
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to update status");
@@ -278,7 +311,7 @@ export default function SebaMembersPage() {
       const response = await api.delete(`/seba/member/${id}`);
       if (response.data.status === "Success") {
         toast.success("Deleted successfully");
-        fetchMembers();
+        fetchMembers(currentPage, searchQuery);
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to delete");
@@ -423,12 +456,6 @@ export default function SebaMembersPage() {
     doc.save(`${member.name}_SEBA_Profile.pdf`);
   };
 
-  const stats = {
-    total: members.length,
-    active: members.filter((m: any) => m.status === "active").length,
-    pending: members.filter((m: any) => m.status === "pending").length,
-    inactive: members.filter((m: any) => m.status === "inactive" || m.status === "rejected").length,
-  };
 
   const columns = [
     {
@@ -853,11 +880,12 @@ export default function SebaMembersPage() {
               columns={columns}
               data={members}
               isLoading={loading}
-              totalRecords={members.length}
-              currentPage={1}
-              limit={100}
-              onPageChange={() => {}}
-              onSearch={() => {}}
+              totalRecords={totalRecords}
+              currentPage={currentPage}
+              limit={10}
+              onPageChange={(page) => fetchMembers(page, searchQuery)}
+              onSearch={(q) => setSearchQuery(q)}
+              searchPlaceholder="Search members by name, company, position, area..."
             />
           </div>
         </div>
