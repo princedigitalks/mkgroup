@@ -410,19 +410,19 @@ export const HomeView = ({
     ? builderData.companyName.trim()
     : "-";
 
-const getProfileImage = () => {
-  if (builderData?.profileImage) {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:5000/v1/api";
+  const getProfileImage = () => {
+    if (builderData?.profileImage) {
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "http://localhost:5000/v1/api";
 
-    const baseUrl = apiUrl.split("/v1/api")[0];
+      const baseUrl = apiUrl.split("/v1/api")[0];
 
-    return `${baseUrl}/builder/${builderData.profileImage}`;
-  }
+      return `${baseUrl}/builder/${builderData.profileImage}`;
+    }
 
-  return null;
-};
+    return null;
+  };
 
   const getLogoImage = () => {
     if (builderData?.logo) {
